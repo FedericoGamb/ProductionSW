@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Gestione Produzione</title>
 <style>
-:root{--p:#102935;--bg:#eef2f4;--card:#fff;--b:#d9e0e4;--mut:#64748b;--red:#c0392b;--ok:#1e8e5a}
+:root{--p:#102935;--bg:#eef2f4;--card:#fff;--b:#d9e0e4;--mut:#64748b;--red:#c0392b;--ok:#1e8e5a;--ok-text:#fff;--ok-shadow:0 8px 28px rgba(0,0,0,.22);--chart-production:#168a72;--chart-scrap:#cc5353;--chart-stop:#397bb7}
 *{box-sizing:border-box}body{margin:0;font-family:Segoe UI,system-ui,sans-serif;background:var(--bg);color:#0f1c22}
 .field{width:100%;padding:9px 11px;border:1px solid var(--b);border-radius:7px;font-size:14px;background:#fff}
 .btn{background:var(--p);color:#fff;border:0;border-radius:7px;padding:9px 16px;font-weight:600;cursor:pointer;font-size:14px}
@@ -26,7 +26,56 @@ main{max-width:1050px;margin:0 auto;padding:24px;display:grid;gap:22px}
 table{width:100%;border-collapse:collapse;font-size:14px}th{text-align:left;color:var(--mut);padding:8px 4px}td{padding:8px 4px;border-top:1px solid var(--b)}
 .err{color:var(--red);font-size:14px;margin:0}.ok{color:var(--ok);font-weight:600;font-size:14px}.mut{color:var(--mut);font-size:13px}
 .folder{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+select.f,input.f{width:auto;padding:7px 9px}.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}.tab{background:#fff;color:var(--p);border:1px solid var(--p);border-radius:20px;padding:6px 14px;cursor:pointer;font-weight:600;font-size:13px}.tab.on{background:var(--p);color:#fff}.tot{display:flex;gap:18px;flex-wrap:wrap;background:var(--bg);border-radius:8px;padding:10px 14px;margin-top:10px;font-size:14px}
 label.n{flex:1;font-size:12px;color:var(--mut)}.hidden{display:none!important}
+.success-alert{position:fixed;bottom:24px;right:24px;z-index:1000;width:calc(100% - 48px);max-width:380px;display:flex;align-items:center;gap:14px;padding:20px;background:var(--ok);color:var(--ok-text);border-radius:8px;box-shadow:var(--ok-shadow)}.success-alert .check{font-size:30px}.success-alert strong{display:block;margin-bottom:4px}.success-alert button{margin-left:auto;border:0;background:transparent;color:inherit;font-size:24px;cursor:pointer}
+.chart-menu{display:flex;gap:8px;margin:14px 0}.chart-menu .tab{border-radius:6px}.charts-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:24px;margin-top:22px}.chart-section{min-width:0;border-top:1px solid var(--b);padding-top:18px}.chart-section h3{margin:0 0 10px;font-size:16px;color:var(--p)}.chart-scroll{overflow:auto;max-height:420px}.report-svg{display:block;width:100%;min-width:560px}.chart-label,.chart-value{fill:var(--p);font:14px Segoe UI,sans-serif}.chart-produced{fill:var(--chart-production)}.chart-scrap{fill:var(--chart-scrap)}.chart-stop{fill:var(--chart-stop)}.chart-legend{display:flex;gap:18px;font-size:13px;margin:12px 0}.chart-legend span{display:flex;gap:6px;align-items:center}.chart-legend i{width:12px;height:12px;background:var(--chart-production);border-radius:2px}.chart-legend .scrap-key{background:var(--chart-scrap)}.chart-empty{padding:36px 0;text-align:center}.report-filters select{max-width:100%}
+.pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.pc{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:150px;padding:16px 10px;background:#fff;border:1px solid var(--b);border-radius:12px;color:var(--p);font:inherit;cursor:pointer;text-align:center}
+.pc:hover,.pc:focus-visible{border-color:var(--p);box-shadow:0 0 0 2px var(--p);outline:none}
+.pc .pn{display:grid;gap:2px;font-size:15px;font-weight:600;color:#0f1c22;overflow-wrap:anywhere}
+.pc .pn span{font-weight:400;font-size:13px;color:var(--mut)}
+.sel{display:flex;gap:10px;flex-wrap:wrap}
+.chip{display:flex;align-items:center;gap:8px;background:var(--bg);border-radius:10px;padding:8px 12px;font-size:14px}
+.chip svg{width:24px;height:24px;color:var(--p)}
+.chg{background:none;border:0;color:var(--p);text-decoration:underline;cursor:pointer;font-size:13px}
+.hint{display:block;margin-top:8px}
+.st{min-width:56px;min-height:52px;font-size:22px}
+.kp-back{position:fixed;inset:0;z-index:2000;display:grid;place-items:center;padding:16px;background:rgba(15,28,34,.55)}
+.kp{width:100%;max-width:360px;background:#fff;border-radius:16px;padding:18px;display:grid;gap:12px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.kp-d{min-height:68px;display:flex;align-items:center;justify-content:flex-end;padding:0 16px;background:var(--bg);border-radius:10px;font-size:40px;font-weight:700;color:var(--p);font-variant-numeric:tabular-nums}
+.kp-g{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.kp-k{min-height:72px;font:inherit;font-size:28px;font-weight:600;color:var(--p);background:#fff;border:1px solid var(--b);border-radius:12px;cursor:pointer;touch-action:manipulation}
+.kp-k:active{background:var(--bg)}
+.kp-k:focus-visible,.kp .btn:focus-visible{outline:2px solid var(--p);outline-offset:2px}
+.kp-a{display:grid;grid-template-columns:1fr 2fr;gap:10px}
+.kp-a .btn{min-height:56px;font-size:17px}
+.kp-x{background:#fff;color:var(--p);border:1px solid var(--p)}
+.kf{position:relative;display:block;flex:1;min-width:0}
+.kf .field{padding-right:38px}
+.kf svg{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:var(--p);opacity:.75;pointer-events:none}
+#folderBox{border-left:6px solid var(--b);padding:14px 20px}
+#folderBox[data-state=ok]{border-left-color:var(--ok)}#folderBox[data-state=need]{border-left-color:#b7791f}
+#folderBox[data-state=err],#folderBox[data-state=none]{border-left-color:var(--red)}
+#fstat{font-size:15px}#folderBox[data-state=ok] #fstat{color:var(--ok)}#folderBox[data-state=need] #fstat{color:#8a5a12}
+#folderBox[data-state=err] #fstat,#folderBox[data-state=none] #fstat{color:var(--red)}
+#nav{display:flex;gap:6px}.nv{background:none;border:0;color:#fff;opacity:.7;padding:8px 16px;border-radius:7px;cursor:pointer;font-size:15px;font-weight:600}.nv.on{opacity:1;background:rgba(255,255,255,.16)}
+#reports{display:grid;gap:18px}.rp-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.filters{display:grid;gap:16px}.frow{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end}
+.fl{display:grid;gap:4px;font-size:12px;color:var(--mut)}.fl select.f{min-width:200px;max-width:100%}.fl .tabs{margin:0}
+.pre{background:#fff;color:var(--p);border:1px solid var(--b);border-radius:7px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer}.pre:hover{border-color:var(--p)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}
+.kpi{background:#fff;border-radius:12px;padding:14px 18px;display:grid;gap:2px;box-shadow:0 1px 3px rgba(0,0,0,.06);border-top:4px solid var(--p)}
+.kpi span{color:var(--mut);font-size:13px}.kpi b{font-size:30px;color:var(--p);font-variant-numeric:tabular-nums}
+.kpi:nth-child(1){border-top-color:var(--chart-production)}.kpi:nth-child(2),.kpi:nth-child(3){border-top-color:var(--chart-scrap)}.kpi:nth-child(4){border-top-color:var(--chart-stop)}
+#reportMenu{margin:0 0 16px;gap:4px;border-bottom:1px solid var(--b)}
+#reportMenu .tab{border:0;border-radius:0;background:none;color:var(--mut);font-size:15px;padding:10px 18px;border-bottom:3px solid transparent;margin-bottom:-1px}
+#reportMenu .tab.on{color:var(--p);background:none;border-bottom-color:var(--p)}
+.tw{overflow:auto;max-height:65vh}.tw th,.tw td{padding:10px 8px;vertical-align:top}.tw thead th{position:sticky;top:0;background:#fff;box-shadow:0 1px 0 var(--b);z-index:1}
+.tw tbody tr:nth-child(even){background:#f7f9fa}.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.sh{margin:0 0 6px;font-size:15px;color:var(--p)}
+.pill{display:inline-block;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600;color:#fff}.pill.ok{background:var(--chart-production)}.pill.sc{background:var(--chart-scrap)}.pill.fe{background:var(--chart-stop)}
+.bar{height:8px;min-width:70px;background:var(--bg);border-radius:4px}.bar i{display:block;height:100%;border-radius:4px;background:var(--chart-scrap)}.bar.f i{background:var(--chart-stop)}
 </style>
 </head>
 <body>
@@ -44,29 +93,96 @@ label.n{flex:1;font-size:12px;color:var(--mut)}.hidden{display:none!important}
 <div id="app" class="hidden">
   <header>
     <div class="l"><div class="sl" style="border:0"><img src="data:image/png;base64,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" alt="Logo"></div><div><b>Gestione Produzione</b><br><small id="who"></small></div></div>
+    <nav id="nav" class="hidden" aria-label="Sezioni"><button type="button" class="nv on" data-page="setup">Anagrafiche</button><button type="button" class="nv" data-page="report">Report</button></nav>
     <button class="btn ghost" id="logout">Esci</button>
   </header>
   <main>
-    <section class="card folder">
-      <div><b>Cartella dati:</b> <span id="fname" class="mut">nessuna (dati salvati solo nel browser)</span></div>
+    <section class="card folder" id="folderBox" data-state="none" role="status" aria-live="polite">
+      <div><b id="fstat">Cartella non collegata: collega la cartella</b><div class="mut" id="fsub"></div></div>
       <div class="row"><button class="btn" id="pick">Collega cartella</button><button class="btn hidden" id="reauth">Riattiva accesso</button></div>
     </section>
     <div id="view"></div>
-    <section class="card">
-      <div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:10px">
-        <h2 style="margin:0">Dati di produzione registrati</h2>
-        <div class="row" style="flex-wrap:wrap;gap:6px">
-          <span class="mut">Dal</span><input class="field" id="fd" type="date" style="width:auto;padding:7px 9px">
-          <span class="mut">Al</span><input class="field" id="fa" type="date" style="width:auto;padding:7px 9px">
-          <button class="btn hidden" id="clr" title="Rimuovi filtro" style="padding:7px 11px">✕</button>
-          <button class="btn" id="exp">Esporta CSV (Excel)</button>
+    <section class="hidden" id="reports">
+      <div class="rp-head"><h2 style="margin:0">Report</h2>
+        <div class="row" style="flex-wrap:wrap;gap:8px"><button class="btn" id="exp">CSV prodotti</button><button class="btn" id="expx">Excel prodotti</button><button class="btn" id="erp" style="background:var(--ok)">Excel ERP scarti e fermi</button></div></div>
+      <div class="card filters">
+        <div class="frow">
+          <div class="fl"><span>Periodo</span><div class="row" style="gap:6px"><input class="field f" id="fd" type="date" aria-label="Dal"><span class="mut">al</span><input class="field f" id="fa" type="date" aria-label="Al"></div></div>
+          <div class="fl"><span>Scelte rapide</span><div class="row" id="presets" style="gap:6px"><button type="button" class="pre" data-range="today">Oggi</button><button type="button" class="pre" data-range="7">Ultimi 7 giorni</button><button type="button" class="pre" data-range="month">Questo mese</button></div></div>
+        </div>
+        <div class="frow">
+          <label class="fl">Operatore<select class="field f" id="fo"></select></label>
+          <label class="fl">Prodotto<select class="field f" id="fp"></select></label>
+          <label class="fl" id="fcw">Causa<select class="field f" id="fc"></select></label>
+          <button class="btn hidden" id="clr" style="padding:8px 12px">Azzera filtri</button>
+        </div>
+        <div class="fl"><span>Tipo di registrazione</span><div class="tabs" id="tabs"><button class="tab on" data-t="">Tutte</button><button class="tab" data-t="Produzione">Produzione</button><button class="tab" data-t="Scarto">Scarti</button><button class="tab" data-t="Fermo">Fermi</button></div></div>
+      </div>
+      <div class="kpis" id="tot"></div>
+      <div class="card">
+        <div class="chart-menu" id="reportMenu" role="tablist" aria-label="Visualizzazione report"><button class="tab on" id="sumTab" role="tab" aria-selected="true" aria-controls="reportSummary" data-report="summary">Riepilogo</button><button class="tab" id="dataTab" role="tab" aria-selected="false" aria-controls="reportTable" data-report="data">Dettaglio</button><button class="tab" id="chartsTab" role="tab" aria-selected="false" aria-controls="reportCharts" data-report="charts">Grafici</button></div>
+        <div id="reportSummary" role="tabpanel" aria-labelledby="sumTab">
+          <div class="row" style="flex-wrap:wrap;margin-bottom:12px"><label for="sumGroup" class="mut">Raggruppa per</label><select id="sumGroup" class="field f"><option value="giorno">Giorno</option><option value="operatore">Operatore</option><option value="prodotto">Prodotto</option></select></div>
+          <div class="tw"><table><thead><tr><th id="sumHead">Giorno</th><th class="num">Prodotti</th><th class="num">Scartati</th><th class="num">% scarto</th><th class="num">Fermi</th><th class="num">Tempo di fermo</th></tr></thead><tbody id="sumRows"></tbody></table></div>
+          <div class="grid2" style="margin-top:24px">
+            <div><h3 class="sh">Scarti per causa</h3><div class="tw"><table><thead><tr><th>Causa</th><th class="num">Pezzi</th><th>Incidenza</th><th></th></tr></thead><tbody id="sumScraps"></tbody></table></div></div>
+            <div><h3 class="sh">Fermi per causa</h3><div class="tw"><table><thead><tr><th>Causa</th><th class="num">Tempo</th><th>Incidenza</th><th></th></tr></thead><tbody id="sumStops"></tbody></table></div></div>
+          </div>
+        </div>
+        <div id="reportTable" class="tw hidden" role="tabpanel" aria-labelledby="dataTab"><table><thead><tr><th>Data</th><th>Tipo</th><th>Operatore</th><th>Prodotto</th><th>Causa</th><th class="num">Pezzi / durata</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
+        <div id="reportCharts" class="hidden" role="tabpanel" aria-labelledby="chartsTab">
+          <div class="row" style="flex-wrap:wrap"><label for="chartGroup" class="mut">Raggruppa quantità per</label><select id="chartGroup" class="field f"><option value="giorno">Giorno</option><option value="operatore">Operatore</option><option value="prodotto">Prodotto</option></select></div>
+          <div class="charts-layout">
+            <section class="chart-section"><h3>Pezzi prodotti e scartati</h3><div class="chart-legend"><span><i></i>Prodotti</span><span><i class="scrap-key"></i>Scartati</span></div><div id="chartVolume" class="chart-scroll"></div></section>
+            <section class="chart-section"><h3>Scarti per causa · pezzi</h3><div id="chartScraps" class="chart-scroll"></div></section>
+            <section class="chart-section"><h3>Fermi per causa · durata</h3><div id="chartStops" class="chart-scroll"></div></section>
+          </div>
         </div>
       </div>
-      <div style="overflow-x:auto;margin-top:12px"><table><thead><tr><th>Data/Ora</th><th>Tipo</th><th>Operatore</th><th>Prodotto</th><th>Causa</th><th>Pezzi</th><th>Durata</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
     </section>
   </main>
 </div>
 
+<div id="successAlert" class="success-alert hidden" role="status" aria-live="polite" aria-atomic="true"></div>
+<script src="report-charts.js"></script>
+<script>
+/* Grafici integrati: usati solo se report-charts.js non è presente nella cartella */
+if (typeof ReportCharts === "undefined") window.ReportCharts = (() => {
+  const x = v => String(v ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const p2 = n => String(n).padStart(2, "0"), hms = t => p2(Math.floor(t / 3600)) + ":" + p2(Math.floor(t % 3600 / 60)) + ":" + p2(t % 60);
+  const day = d => d.getFullYear() + "-" + p2(d.getMonth() + 1) + "-" + p2(d.getDate());
+  const bump = (m, key, label, f) => { const o = m.get(key) || {label, key, produced: 0, scrap: 0, value: 0}; f(o); m.set(key, o); };
+  return {
+    aggregate(list, group) {
+      const vol = new Map(), sc = new Map(), st = new Map();
+      for (const r of list) {
+        const d = new Date(r.ts), k = group === "operatore" ? r.operatore : group === "prodotto" ? r.prodotto : day(d);
+        const lab = group === "giorno" ? d.toLocaleDateString("it-IT") : k;
+        if (r.tipo === "Produzione") bump(vol, k, lab, o => o.produced += r.pezzi || 0);
+        if (r.tipo === "Scarto") { bump(vol, k, lab, o => o.scrap += r.pezzi || 0); bump(sc, r.causa, r.causa, o => o.value += r.pezzi || 0); }
+        if (r.tipo === "Fermo") bump(st, r.causa, r.causa, o => o.value += r.durataSec || 0);
+      }
+      const byVal = m => [...m.values()].sort((a, b) => b.value - a.value);
+      return {volume: [...vol.values()].sort(group === "giorno" ? (a, b) => a.key.localeCompare(b.key) : (a, b) => b.produced - a.produced), scraps: byVal(sc), stops: byVal(st)};
+    },
+    draw(el, rows, series, unit, title) {
+      const max = Math.max(0, ...rows.flatMap(r => series.map(s => r[s.key] || 0)));
+      if (!rows.length || !max) { el.innerHTML = '<p class="chart-empty mut">Nessun dato da mostrare</p>'; return; }
+      const val = v => unit === "secondi" ? hms(v) : String(v), X0 = 200, BW = 400, bh = 16, rh = series.length * (bh + 2) + 12;
+      let g = "";
+      rows.forEach((r, i) => {
+        const y = 10 + i * rh, lab = String(r.label).length > 26 ? String(r.label).slice(0, 25) + "…" : r.label;
+        g += `<text class="chart-label" x="${X0 - 10}" y="${y + series.length * (bh + 2) / 2 + 4}" text-anchor="end"><title>${x(r.label)}</title>${x(lab)}</text>`;
+        series.forEach((s, j) => {
+          const v = r[s.key] || 0, w = v ? Math.max(2, v / max * BW) : 0, yy = y + j * (bh + 2);
+          g += `<rect class="${s.className}" x="${X0}" y="${yy}" width="${w}" height="${bh}" rx="2"><title>${x(s.label)}: ${x(val(v))}</title></rect><text class="chart-value" x="${X0 + w + 6}" y="${yy + bh - 3}">${x(val(v))}</text>`;
+        });
+      });
+      el.innerHTML = `<svg class="report-svg" viewBox="0 0 700 ${rows.length * rh + 14}" role="img" aria-label="${x(title)}">${g}</svg>`;
+    }
+  };
+})();
+</script>
 <script>
 const $ = s => document.querySelector(s);
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -74,6 +190,16 @@ const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;
 const LS = "produzione-data-v1";
 let data = {operatori:[],prodotti:[],scarti:[],fermi:[],registrazioni:[]};
 let role = null, dir = null;
+const canViewReports = r => r === "admin";
+let notificationTimer;
+function showSuccess(message) {
+  clearTimeout(notificationTimer);
+  const box = $("#successAlert");
+  box.innerHTML = `<span class="check" aria-hidden="true">✓</span><div><strong>Registrazione aggiunta</strong><span>${esc(message)}</span></div><button type="button" aria-label="Chiudi conferma">×</button>`;
+  box.classList.remove("hidden");
+  box.querySelector("button").onclick = () => { clearTimeout(notificationTimer); box.classList.add("hidden"); box.replaceChildren(); };
+  notificationTimer = setTimeout(() => { box.classList.add("hidden"); box.replaceChildren(); }, 6000);
+}
 
 /* ---------- IndexedDB per ricordare la cartella ---------- */
 const idb = () => new Promise((res, rej) => { const r = indexedDB.open("produzione", 1); r.onupgradeneeded = () => r.result.createObjectStore("kv"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
@@ -94,13 +220,26 @@ async function writeFolder() {
   const w = await fh.createWritable(); await w.write(JSON.stringify(data, null, 2)); await w.close();
   const ch = await dir.getFileHandle("registrazioni.csv", {create: true});
   const w2 = await ch.createWritable(); await w2.write("\ufeff" + csv()); await w2.close();
+  const eh = await dir.getFileHandle("ERP_scarti_fermi.xlsx", {create: true});
+  const w3 = await eh.createWritable(); await w3.write(erpXlsx(data.registrazioni)); await w3.close();
 }
 async function save() {
   localStorage.setItem(LS, JSON.stringify(data));
-  try { await writeFolder(); } catch (e) { alert("Impossibile scrivere nella cartella: " + e.message); }
+  try { await writeFolder(); if (dir) folderStatus("ok", dir.name); } catch (e) { folderStatus("err", dir && dir.name); alert("Impossibile salvare nella cartella: ricollega la cartella.\n" + e.message); }
   render();
 }
-async function connect(h) { dir = h; await readFolder(); $("#fname").textContent = "📁 " + h.name; $("#fname").className = ""; $("#reauth").classList.add("hidden"); render(); }
+function folderStatus(state, name = "") {
+  let t = {ok: ["Cartella collegata correttamente", `I dati vengono salvati in «${name}»`],
+    need: ["Cartella scollegata: riattiva l'accesso", `Premi «Riattiva accesso» per tornare a salvare in «${name}»`],
+    err: ["Salvataggio nella cartella non riuscito: ricollega la cartella", "Controlla che la cartella esista ancora, poi premi «Ricollega cartella»"],
+    none: ["Cartella non collegata: collega la cartella", "Finché non la colleghi, i dati restano solo in questo browser"]}[state];
+  if (state === "none" && !window.showDirectoryPicker) t = [t[0], "Questo browser non permette di collegare la cartella: usa Chrome o Edge"];
+  $("#folderBox").dataset.state = state; $("#fstat").textContent = t[0]; $("#fsub").textContent = t[1];
+  $("#pick").textContent = state === "ok" ? "Cambia cartella" : state === "err" ? "Ricollega cartella" : "Collega cartella";
+  $("#reauth").classList.toggle("hidden", state !== "need");
+}
+document.addEventListener("visibilitychange", async () => { if (!dir || document.hidden) return; try { if (await dir.queryPermission({mode: "readwrite"}) !== "granted") folderStatus("need", dir.name); } catch { folderStatus("err", dir.name); } });
+async function connect(h) { dir = h; await readFolder(); folderStatus("ok", h.name); render(); }
 
 $("#pick").onclick = async () => {
   if (!window.showDirectoryPicker) return alert("Usa Google Chrome o Microsoft Edge per collegare una cartella.");
@@ -128,34 +267,165 @@ function csv(list = data.registrazioni) {
   const head = ["Data/Ora","Tipo","Operatore","Prodotto","Causa","Pezzi","Durata (hh:mm:ss)"];
   return [head.map(q).join(";"), ...list.map(r => [new Date(r.ts).toLocaleString("it-IT"), r.tipo, r.operatore, r.prodotto, r.causa, r.pezzi ?? "", r.tipo === "Fermo" ? fmt(r.durataSec) : ""].map(q).join(";"))].join("\n");
 }
+let tipoF = "";
+let reportMode = "summary", page = "setup";
 function filtro() {
-  const d = $("#fd") ? $("#fd").value : "", a = $("#fa") ? $("#fa").value : "";
-  if (!d && !a) return {list: data.registrazioni, attivo: false};
+  const d = $("#fd").value, a = $("#fa").value, o = $("#fo").value, p = $("#fp").value, c = $("#fc").value;
   const list = data.registrazioni.filter(r => {
     const g = iso(new Date(r.ts));
-    if (d && g < d) return false;
-    if (a && g > a) return false;
+    if (d && g < d) return false; if (a && g > a) return false;
+    if (tipoF && r.tipo !== tipoF) return false;
+    if (o && r.operatore !== o) return false; if (p && r.prodotto !== p) return false;
+    if (c && r.causa !== c) return false;
     return true;
   });
-  return {list, attivo: true};
+  return {list, attivo: !!(d || a || o || p || c || tipoF)};
 }
-$("#exp").onclick = () => {
-  const f = filtro(), a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob(["\ufeff" + csv(f.list)], {type: "text/csv;charset=utf-8"}));
-  const range = f.attivo ? `_dal_${$("#fd").value || "inizio"}_al_${$("#fa").value || "oggi"}` : "";
-  a.download = `produzione${range}_${new Date().toISOString().slice(0,10)}.csv`;
-  a.click();
-};
-$("#fd").oninput = $("#fa").oninput = render;
-$("#clr").onclick = () => { $("#fd").value = ""; $("#fa").value = ""; render(); };
+function filtroBase() { const t = tipoF; tipoF = ""; const f = filtro(); tipoF = t; return f.list; }
+const stamp = () => { const p = [$("#fd").value && "dal_" + $("#fd").value, $("#fa").value && "al_" + $("#fa").value].filter(Boolean).join("_"); return (p ? p + "_" : "") + new Date().toISOString().slice(0,10); };
+const dl = (blob, name) => { if (!canViewReports(role)) return; const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; a.click(); };
+
+/* ---------- Writer XLSX (senza librerie, funziona offline) ---------- */
+const CRC = (() => { const t = []; for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+const crc32 = u => { let c = -1; for (const b of u) c = CRC[(c ^ b) & 255] ^ (c >>> 8); return (c ^ -1) >>> 0; };
+function zip(files) {
+  const enc = new TextEncoder(), parts = [], cen = []; let off = 0;
+  for (const [name, txt] of files) {
+    const n = enc.encode(name), d = enc.encode(txt), c = crc32(d);
+    const h = new DataView(new ArrayBuffer(30)); h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x800, true); h.setUint32(14, c, true); h.setUint32(18, d.length, true); h.setUint32(22, d.length, true); h.setUint16(26, n.length, true);
+    parts.push(h, n, d);
+    const e = new DataView(new ArrayBuffer(46)); e.setUint32(0, 0x02014b50, true); e.setUint16(4, 20, true); e.setUint16(6, 20, true); e.setUint16(8, 0x800, true); e.setUint32(16, c, true); e.setUint32(20, d.length, true); e.setUint32(24, d.length, true); e.setUint16(28, n.length, true); e.setUint32(42, off, true);
+    cen.push(e, n); off += 30 + n.length + d.length;
+  }
+  const size = cen.reduce((s, x) => s + x.byteLength, 0), z = new DataView(new ArrayBuffer(22));
+  z.setUint32(0, 0x06054b50, true); z.setUint16(8, files.length, true); z.setUint16(10, files.length, true); z.setUint32(12, size, true); z.setUint32(16, off, true);
+  return new Blob([...parts, ...cen, z], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+}
+function xlsx(sheets) {
+  const x = v => String(v ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const col = i => { let s = ""; i++; while (i) { s = String.fromCharCode(65 + (i - 1) % 26) + s; i = Math.floor((i - 1) / 26); } return s; };
+  const sheet = rows => `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${rows.map((r, ri) => `<row r="${ri+1}">${r.map((v, ci) => { const ref = col(ci) + (ri+1), st = ri ? "" : ' s="1"'; return typeof v === "number" ? `<c r="${ref}"${st}><v>${v}</v></c>` : `<c r="${ref}" t="inlineStr"${st}><is><t>${x(v)}</t></is></c>`; }).join("")}</row>`).join("")}</sheetData></worksheet>`;
+  const f = [
+    ["[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((_, i) => `<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("")}</Types>`],
+    ["_rels/.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`],
+    ["xl/workbook.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${sheets.map((s, i) => `<sheet name="${x(s.name)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join("")}</sheets></workbook>`],
+    ["xl/_rels/workbook.xml.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((_, i) => `<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join("")}<Relationship Id="rId${sheets.length+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`],
+    ["xl/styles.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Arial"/></font><font><b/><sz val="11"/><name val="Arial"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf/></cellStyleXfs><cellXfs count="2"><xf fontId="0"/><xf fontId="1" applyFont="1"/></cellXfs></styleSheet>`],
+    ...sheets.map((s, i) => [`xl/worksheets/sheet${i+1}.xml`, sheet(s.rows)]),
+  ];
+  return zip(f);
+}
+/* Separa codice e descrizione salvati come "CODICE descrizione" */
+const split = (txt, list) => { const it = list.find(i => i.a + " " + i.b === txt); if (it) return [it.a, it.b]; const k = String(txt).indexOf(" "); return k < 0 ? [txt, ""] : [txt.slice(0, k), txt.slice(k + 1)]; };
+const dataIt = r => new Date(r.ts).toLocaleDateString("it-IT"), oraIt = r => new Date(r.ts).toLocaleTimeString("it-IT");
+function reportXlsx(list) {
+  return xlsx([{name: "Report", rows: [["Data","Ora","Tipo","Operatore","Codice prodotto","Descrizione prodotto","Causa","Pezzi","Durata (hh:mm:ss)","Durata (minuti)"],
+    ...list.map(r => [dataIt(r), oraIt(r), r.tipo, r.operatore, ...split(r.prodotto, data.prodotti), r.causa, r.pezzi ?? "", r.tipo === "Fermo" ? fmt(r.durataSec) : "", r.tipo === "Fermo" ? Math.round(r.durataSec / 6) / 10 : ""])]}]);
+}
+function erpXlsx(list) {
+  const sc = list.filter(r => r.tipo === "Scarto"), fe = list.filter(r => r.tipo === "Fermo");
+  return xlsx([
+    {name: "Scarti", rows: [["Data","Ora","Operatore","Codice prodotto","Descrizione prodotto","Codice causa scarto","Descrizione causa scarto","Quantita scartata"],
+      ...sc.map(r => [dataIt(r), oraIt(r), r.operatore, ...split(r.prodotto, data.prodotti), ...split(r.causa, data.scarti), r.pezzi ?? 0])]},
+    {name: "Fermi", rows: [["Data","Ora","Operatore","Codice prodotto","Descrizione prodotto","Codice causa fermo","Descrizione causa fermo","Durata (hh:mm:ss)","Durata (secondi)","Durata (minuti)"],
+      ...fe.map(r => [dataIt(r), oraIt(r), r.operatore, ...split(r.prodotto, data.prodotti), ...split(r.causa, data.fermi), fmt(r.durataSec), r.durataSec || 0, Math.round((r.durataSec || 0) / 6) / 10])]},
+  ]);
+}
+const prodList = () => filtroBase().filter(r => r.tipo === "Produzione");
+$("#exp").onclick = () => dl(new Blob(["\ufeff" + csv(prodList())], {type: "text/csv;charset=utf-8"}), `produzione_${stamp()}.csv`);
+$("#expx").onclick = () => dl(reportXlsx(prodList()), `produzione_${stamp()}.xlsx`);
+$("#erp").onclick = () => dl(erpXlsx(filtroBase()), `ERP_scarti_fermi_${stamp()}.xlsx`);
+["#fd","#fa","#fo","#fp","#fc"].forEach(id => $(id).onchange = $(id).oninput = render);
+$("#tabs").onclick = e => { const t = e.target.closest("[data-t]"); if (!t) return; tipoF = t.dataset.t; $("#fc").value = ""; document.querySelectorAll(".tab").forEach(b => b.classList.toggle("on", b === t)); render(); };
+$("#clr").onclick = () => { ["#fd","#fa","#fo","#fp","#fc"].forEach(id => $(id).value = ""); tipoF = ""; document.querySelectorAll(".tab").forEach((b, i) => b.classList.toggle("on", !i)); render(); };
+$("#reportMenu").onclick = e => { const button = e.target.closest("[data-report]"); if (!button || !canViewReports(role)) return; reportMode = button.dataset.report; render(); };
+$("#chartGroup").onchange = $("#sumGroup").onchange = render;
+$("#nav").onclick = e => { const b = e.target.closest("[data-page]"); if (b) { page = b.dataset.page; render(); } };
+$("#presets").onclick = e => { const b = e.target.closest("[data-range]"); if (!b) return; const t = new Date(), x = new Date(t); if (b.dataset.range === "7") x.setDate(x.getDate() - 6); if (b.dataset.range === "month") x.setDate(1); $("#fd").value = iso(x); $("#fa").value = iso(t); render(); };
+function fillSel(id, label, vals) { const el = $(id), cur = el.value; el.innerHTML = `<option value="">${label}</option>` + [...new Set(vals)].filter(Boolean).sort().map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join(""); el.value = [...el.options].some(o => o.value === cur) ? cur : ""; }
 const opts = (list, label) => `<option value="">${label}</option>` + list.map(i => `<option value="${esc(i.a + " " + i.b)}">${esc(i.a)} — ${esc(i.b)}</option>`).join("");
 
 /* ---------- Render ---------- */
 const REG = [["operatori","Operatori","Nome","Cognome"],["prodotti","Prodotti","Codice","Descrizione"],["scarti","Cause di scarto","Codice","Descrizione"],["fermi","Cause di fermo","Codice","Descrizione"]];
 let opState = {op:"", prod:""};
+const SVG = d => `<svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const ICON_USER = SVG('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>');
+const ICON_CALC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2.5" width="14" height="19" rx="2.5"/><rect x="8" y="5.5" width="8" height="3.5" rx=".8"/><path d="M8.5 13h.01M12 13h.01M15.5 13h.01M8.5 16.5h.01M12 16.5h.01M15.5 16.5h.01"/></svg>';
+const ICON_BOX = SVG('<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5L12 12l8-4.5M12 12v9"/>');
+function openKeypad(input, title, max) {
+  if ($("#kp")) return;
+  let buf = input.value, fresh = true;
+  const back = document.createElement("div");
+  back.id = "kp"; back.className = "kp-back";
+  back.innerHTML = `<div class="kp" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="mut">${esc(title)}</div><div class="kp-d" id="kpd" aria-live="polite"></div><div class="kp-g">${[1,2,3,4,5,6,7,8,9,"C",0,"⌫"].map(k => `<button type="button" class="kp-k" data-k="${k}"${k === "⌫" ? ' aria-label="Cancella ultima cifra"' : k === "C" ? ' aria-label="Azzera"' : ""}>${k}</button>`).join("")}</div><div class="kp-a"><button type="button" class="btn kp-x" data-k="x">Annulla</button><button type="button" class="btn" data-k="ok">Conferma</button></div></div>`;
+  document.body.appendChild(back);
+  const show = () => $("#kpd").textContent = buf || "0";
+  const close = () => { document.removeEventListener("keydown", key); back.remove(); input.focus(); };
+  const press = k => {
+    if (k === "x") return close();
+    if (k === "ok") { input.value = buf; return close(); }
+    if (k === "C") buf = "";
+    else if (k === "⌫") buf = buf.slice(0, -1);
+    else { if (fresh) buf = ""; buf = (buf + k).replace(/^0+(?=\d)/, "").slice(0, max ? String(max).length : 6); if (max && +buf > max) buf = String(max); }
+    fresh = false; show();
+  };
+  const key = e => {
+    if (/^\d$/.test(e.key)) press(e.key); else if (e.key === "Backspace") press("⌫"); else if (e.key === "Enter") press("ok"); else if (e.key === "Escape") press("x"); else return;
+    e.preventDefault();
+  };
+  back.onclick = e => { if (e.target === back) close(); };
+  back.querySelectorAll("[data-k]").forEach(b => b.onclick = () => press(b.dataset.k));
+  document.addEventListener("keydown", key);
+  show(); back.querySelector('[data-k="ok"]').focus();
+}
+function renderOperatore(v) {
+  const o = opState, step = !o.op ? 1 : !o.prod ? 2 : 3;
+  const cards = (list, icon, label, vuoto) => list.length ? `<div class="pick">${list.map(i => `<button type="button" class="pc" data-pick="${i.id}">${icon}<span class="pn">${label(i)}</span></button>`).join("")}</div>` : `<p class="mut">${vuoto}</p>`;
+  const [pc, pd] = o.prod ? split(o.prod, data.prodotti) : ["", ""];
+  const chips = (o.op ? `<div class="chip">${ICON_USER}<b>${esc(o.op)}</b><button type="button" class="chg" data-back="op">Cambia</button></div>` : "") + (o.prod ? `<div class="chip">${ICON_BOX}<span><b>${esc(pc)}</b> ${esc(pd)}</span><button type="button" class="chg" data-back="prod">Cambia</button></div>` : "");
+  const stepper = (m, id, p, val, ph) => `<div class="row"><button type="button" class="btn st" id="${m}">−</button><span class="kf"><input class="field" id="${id}" type="number" min="0" value="${val}" placeholder="${ph}" readonly inputmode="none" aria-haspopup="dialog" style="text-align:center;font-weight:700;font-size:24px;min-height:52px;padding:0 38px;cursor:pointer">${ICON_CALC}</span><button type="button" class="btn st" id="${p}">+</button></div>`;
+  if (step === 1) v.innerHTML = `<section class="card"><h2>Chi sei?</h2>${cards(data.operatori, ICON_USER, i => `${esc(i.a)} ${esc(i.b)}`, "Nessun operatore. Chiedi all'amministratore di crearne uno.")}</section>`;
+  else if (step === 2) v.innerHTML = `<section class="card"><div class="sel" style="margin-bottom:16px">${chips}</div><h2>Che prodotto hai lavorato?</h2>${cards(data.prodotti, ICON_BOX, i => `<b>${esc(i.a)}</b><span>${esc(i.b)}</span>`, "Nessun prodotto. Chiedi all'amministratore di crearne uno.")}</section>`;
+  else v.innerHTML = `<section class="card"><div class="sel">${chips}</div></section>
+    <div class="grid2">
+      <section class="card"><h2>Pezzi prodotti</h2>${stepper("minusP", "pzp", "plusP", "", "0")}<small class="mut hint">Solo pezzi buoni, scarti esclusi</small></section>
+      <section class="card"><h2>Scarto</h2>${stepper("minus", "pz", "plus", 0, "0")}
+        <select class="field" id="cs" style="margin-top:12px">${opts(data.scarti, "Causa scarto")}</select><small class="mut hint">Compila solo se ci sono scarti</small></section>
+      <section class="card"><h2>Fermo macchina</h2>
+        <div class="row">${[["h", "Ore", 99], ["m", "Minuti", 59], ["s", "Secondi", 59]].map(([id, l, mx]) => `<label class="n">${l}<span class="kf"><input class="field" id="${id}" type="number" min="0" max="${mx}" value="0" readonly inputmode="none" aria-haspopup="dialog" style="text-align:center;font-weight:700;font-size:20px;min-height:48px;padding:0 30px;cursor:pointer">${ICON_CALC}</span></label>`).join("")}</div>
+        <select class="field" id="cf" style="margin-top:12px">${opts(data.fermi, "Causa fermo")}</select><small class="mut hint">Compila solo se c'è stato un fermo</small></section>
+    </div>
+    <button type="button" class="btn" id="regT" style="width:100%;padding:14px;font-size:16px">Registra turno</button>`;
+  v.querySelectorAll("[data-pick]").forEach(b => b.onclick = () => { const it = (step === 1 ? data.operatori : data.prodotti).find(x => x.id === b.dataset.pick); if (!it) return; o[step === 1 ? "op" : "prod"] = it.a + " " + it.b; render(); });
+  v.querySelectorAll("[data-back]").forEach(b => b.onclick = () => { o[b.dataset.back] = ""; render(); });
+  if (step !== 3) return;
+  [["minusP", "plusP", "#pzp"], ["minus", "plus", "#pz"]].forEach(([m, p, id]) => { $("#" + m).onclick = () => $(id).value = Math.max(0, (+$(id).value || 0) - 1); $("#" + p).onclick = () => $(id).value = (+$(id).value || 0) + 1; });
+  [["#pzp", "Pezzi prodotti"], ["#pz", "Pezzi scartati"], ["#h", "Ore di fermo", 99], ["#m", "Minuti di fermo", 59], ["#s", "Secondi di fermo", 59]].forEach(([id, t, mx]) => { const el = $(id); el.onclick = () => openKeypad(el, t, mx); el.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openKeypad(el, t, mx); } }; });
+  $("#regT").onclick = () => {
+    const n = id => Math.max(0, parseInt($(id).value) || 0), c = (id, max) => Math.min(max, n(id));
+    const prd = n("#pzp"), scr = n("#pz"), cs = $("#cs").value, cf = $("#cf").value, dur = c("#h", 99) * 3600 + c("#m", 59) * 60 + c("#s", 59);
+    if (!prd && !scr && !dur) return alert("Inserisci almeno i pezzi prodotti, uno scarto o un fermo.");
+    if (scr && !cs) return alert("Seleziona la causa di scarto.");
+    if (!scr && cs) return alert("Hai scelto una causa di scarto: inserisci anche i pezzi scartati.");
+    if (dur && !cf) return alert("Seleziona la causa di fermo.");
+    if (!dur && cf) return alert("Hai scelto una causa di fermo: inserisci anche la durata.");
+    if (!dir && !confirm("La cartella non è collegata: il turno verrà salvato solo in questo browser.\nRegistrare comunque?")) return;
+    const ts = new Date().toISOString(), base = {operatore: o.op, prodotto: o.prod}, recs = [];
+    if (prd) recs.push({tipo: "Produzione", causa: "", pezzi: prd});
+    if (scr) recs.push({tipo: "Scarto", causa: cs, pezzi: scr});
+    if (dur) recs.push({tipo: "Fermo", causa: cf, durataSec: dur});
+    data.registrazioni.unshift(...recs.map(r => ({id: uid(), ts, ...base, ...r})));
+    const msg = [prd && `${prd} prodotti`, scr && `${scr} scartati`, dur && `fermo ${fmt(dur)}`].filter(Boolean).join(", ");
+    opState = {op: "", prod: ""};
+    save().then(() => showSuccess(msg));
+  };
+}
 function render() {
   if (!role) return;
-  const v = $("#view");
+  $("#reports").classList.toggle("hidden", !(canViewReports(role) && page === "report"));
+  $("#nav").classList.toggle("hidden", role !== "admin");
+  document.querySelectorAll("[data-page]").forEach(b => b.classList.toggle("on", b.dataset.page === page));
+  const v = $("#view"); v.classList.toggle("hidden", role === "admin" && page !== "setup");
   if (role === "admin") {
     v.innerHTML = `<div class="grid2">${REG.map(([k,t,a,b]) => `
       <section class="card"><h2>${t}</h2>
@@ -165,59 +435,65 @@ function render() {
     v.querySelectorAll("[data-add]").forEach(f => f.onsubmit = e => { e.preventDefault(); const a = f.a.value.trim(), b = f.b.value.trim(); if (!a || !b) return; data[f.dataset.add].push({id: uid(), a, b}); save(); });
     v.querySelectorAll("[data-del]").forEach(bt => bt.onclick = () => { const [k, id] = bt.dataset.del.split(":"); data[k] = data[k].filter(x => x.id !== id); save(); });
   } else {
-    v.innerHTML = `
-      <section class="card"><h2>Turno</h2><div class="grid2" style="gap:12px">
-        <select class="field" id="op">${opts(data.operatori, "Seleziona operatore")}</select>
-        <select class="field" id="prod">${opts(data.prodotti, "Seleziona prodotto")}</select></div>
-        <p class="ok" id="msg"></p></section>
-      <div class="grid2">
-        <section class="card"><h2>Pezzi prodotti</h2>
-          <div class="row"><button class="btn" id="minusP">−</button><input class="field" id="pzp" type="number" min="1" value="1" style="text-align:center;font-weight:700;font-size:18px"><button class="btn" id="plusP">+</button></div>
-          <button class="btn" style="width:100%;margin-top:12px" id="regP">Registra produzione</button></section>
-        <section class="card"><h2>Pezzi scartati</h2>
-          <div class="row"><button class="btn" id="minus">−</button><input class="field" id="pz" type="number" min="1" value="1" style="text-align:center;font-weight:700;font-size:18px"><button class="btn" id="plus">+</button></div>
-          <select class="field" id="cs" style="margin:12px 0">${opts(data.scarti, "Causa scarto")}</select>
-          <button class="btn" style="width:100%" id="regS">Registra scarto</button></section>
-        <section class="card"><h2>Fermo macchina</h2>
-          <div class="row"><label class="n">Ore<input class="field" id="h" type="number" min="0" max="99" value="0"></label><label class="n">Minuti<input class="field" id="m" type="number" min="0" max="59" value="0"></label><label class="n">Secondi<input class="field" id="s" type="number" min="0" max="59" value="0"></label></div>
-          <select class="field" id="cf" style="margin:12px 0">${opts(data.fermi, "Causa fermo")}</select>
-          <button class="btn" style="width:100%" id="regF">Registra fermo</button></section>
-      </div>`;
-    $("#op").value = opState.op; $("#prod").value = opState.prod;
-    $("#op").onchange = e => opState.op = e.target.value; $("#prod").onchange = e => opState.prod = e.target.value;
-    $("#minusP").onclick = () => $("#pzp").value = Math.max(1, (+$("#pzp").value || 1) - 1);
-    $("#plusP").onclick = () => $("#pzp").value = (+$("#pzp").value || 0) + 1;
-    $("#minus").onclick = () => $("#pz").value = Math.max(1, (+$("#pz").value || 1) - 1);
-    $("#plus").onclick = () => $("#pz").value = (+$("#pz").value || 0) + 1;
-    const add = (rec, label) => {
-      if (!opState.op || !opState.prod) return alert("Seleziona operatore e prodotto.");
-      data.registrazioni.unshift({id: uid(), ts: new Date().toISOString(), operatore: opState.op, prodotto: opState.prod, ...rec});
-      save().then(() => { $("#msg").textContent = "✓ " + label + " registrato"; setTimeout(() => { const m = $("#msg"); if (m) m.textContent = ""; }, 2500); });
-    };
-    $("#regP").onclick = () => { const pz = Math.max(1, parseInt($("#pzp").value) || 0); add({tipo: "Produzione", causa: "", pezzi: pz}, "Produzione"); };
-    $("#regS").onclick = () => { const cs = $("#cs").value, pz = Math.max(1, parseInt($("#pz").value) || 0); if (!cs) return alert("Seleziona la causa di scarto."); add({tipo: "Scarto", causa: cs, pezzi: pz}, "Scarto"); };
-    $("#regF").onclick = () => {
-      const c = (id, max) => Math.max(0, Math.min(max, parseInt($(id).value) || 0));
-      const d = c("#h", 99) * 3600 + c("#m", 59) * 60 + c("#s", 59), cf = $("#cf").value;
-      if (!cf) return alert("Seleziona la causa di fermo."); if (!d) return alert("Inserisci la durata del fermo.");
-      add({tipo: "Fermo", causa: cf, durataSec: d}, "Fermo");
-    };
+    renderOperatore(v);
   }
-  const f = filtro();
-  $("#rows").innerHTML = f.list.map(r => `<tr><td>${new Date(r.ts).toLocaleString("it-IT")}</td><td>${r.tipo}</td><td>${esc(r.operatore)}</td><td>${esc(r.prodotto)}</td><td>${esc(r.causa)}</td><td>${r.pezzi ?? ""}</td><td>${r.tipo === "Fermo" ? fmt(r.durataSec) : ""}</td><td>${role === "admin" ? `<button class="link" data-rdel="${r.id}">Elimina</button>` : ""}</td></tr>`).join("") || `<tr><td colspan="8" class="mut">Nessuna registrazione${f.attivo ? " nel periodo selezionato" : ""}</td></tr>`;
+  if (!canViewReports(role)) { ["#rows", "#tot", "#chartVolume", "#chartScraps", "#chartStops"].forEach(id => $(id).replaceChildren()); return; }
+  if (page !== "report") return;
+  document.querySelectorAll("[data-report]").forEach(b => { const selected = b.dataset.report === reportMode; b.classList.toggle("on", selected); b.setAttribute("aria-selected", String(selected)); });
+  document.querySelectorAll("#tabs [data-t]").forEach(b => b.classList.toggle("on", b.dataset.t === tipoF));
+  [["summary", "#reportSummary"], ["data", "#reportTable"], ["charts", "#reportCharts"]].forEach(([m, id]) => $(id).classList.toggle("hidden", reportMode !== m));
+  const R = data.registrazioni, cn = c => tipoF === "Scarto" ? c.tipo === "Scarto" : tipoF === "Fermo" ? c.tipo === "Fermo" : c.tipo !== "Produzione";
+  fillSel("#fo", "Tutti gli operatori", [...data.operatori.map(i => i.a + " " + i.b), ...R.map(r => r.operatore)]);
+  fillSel("#fp", "Tutti i prodotti", [...data.prodotti.map(i => i.a + " " + i.b), ...R.map(r => r.prodotto)]);
+  fillSel("#fc", tipoF === "Scarto" ? "Tutte le cause di scarto" : tipoF === "Fermo" ? "Tutte le cause di fermo" : "Tutte le cause", [...(tipoF !== "Fermo" ? data.scarti : []).map(i => i.a + " " + i.b), ...(tipoF !== "Scarto" ? data.fermi : []).map(i => i.a + " " + i.b), ...R.filter(cn).map(r => r.causa)]);
+  $("#fcw").classList.toggle("hidden", tipoF === "Produzione");
+  const f = filtro(), sum = t => f.list.filter(r => r.tipo === t);
+  if (reportMode === "charts") {
+    const charts = ReportCharts.aggregate(f.list, $("#chartGroup").value);
+    ReportCharts.draw($("#chartVolume"), charts.volume, [{key:"produced",label:"Prodotti",className:"chart-produced"},{key:"scrap",label:"Scartati",className:"chart-scrap"}], "pezzi", "Pezzi prodotti e scartati");
+    ReportCharts.draw($("#chartScraps"), charts.scraps, [{key:"value",label:"Scarti",className:"chart-scrap"}], "pezzi", "Scarti per causa");
+    ReportCharts.draw($("#chartStops"), charts.stops, [{key:"value",label:"Fermi",className:"chart-stop"}], "secondi", "Fermi per causa");
+  }
+  const prd = sum("Produzione").reduce((s, r) => s + (r.pezzi || 0), 0), scr = sum("Scarto").reduce((s, r) => s + (r.pezzi || 0), 0), fer = sum("Fermo").reduce((s, r) => s + (r.durataSec || 0), 0);
+  const N = n => n.toLocaleString("it-IT"), pct = (a, b) => a + b ? (a / (a + b) * 100).toFixed(1).replace(".", ",") + "%" : "–";
+  $("#tot").innerHTML = [["Pezzi prodotti", N(prd), `${N(f.list.length)} registrazioni`], ["Pezzi scartati", N(scr), "&nbsp;"], ["% scarto", pct(scr, prd), "scarti su prodotti + scarti"], ["Tempo di fermo", fmt(fer), `${sum("Fermo").length} fermi`]].map(([l, v, n]) => `<div class="kpi"><span>${l}</span><b>${v}</b><small>${n}</small></div>`).join("");
+  if (reportMode === "summary") {
+    const g = $("#sumGroup").value, rows = new Map(), dh = {giorno: "Giorno", operatore: "Operatore", prodotto: "Prodotto"};
+    for (const r of f.list) {
+      const d = new Date(r.ts), k = g === "operatore" ? r.operatore : g === "prodotto" ? r.prodotto : iso(d);
+      const o = rows.get(k) || {k, lab: g === "giorno" ? d.toLocaleDateString("it-IT", {weekday: "short", day: "2-digit", month: "2-digit", year: "numeric"}) : k, prd: 0, scr: 0, fer: 0, nf: 0};
+      if (r.tipo === "Produzione") o.prd += r.pezzi || 0; else if (r.tipo === "Scarto") o.scr += r.pezzi || 0; else { o.fer += r.durataSec || 0; o.nf++; }
+      rows.set(k, o);
+    }
+    const lab = o => { if (g !== "prodotto") return esc(o.lab); const [c, d] = split(o.k, data.prodotti); return `<b>${esc(c)}</b> <span class="mut">${esc(d)}</span>`; };
+    $("#sumHead").textContent = dh[g];
+    $("#sumRows").innerHTML = [...rows.values()].sort(g === "giorno" ? (a, b) => b.k.localeCompare(a.k) : (a, b) => b.prd - a.prd).map(o => `<tr><td>${lab(o)}</td><td class="num">${N(o.prd)}</td><td class="num">${N(o.scr)}</td><td class="num">${pct(o.scr, o.prd)}</td><td class="num">${o.nf}</td><td class="num">${fmt(o.fer)}</td></tr>`).join("") || `<tr><td colspan="6" class="mut">Nessun dato con i filtri selezionati</td></tr>`;
+    const cau = (tipo, val, fv, list) => {
+      const m = new Map(); sum(tipo).forEach(r => m.set(r.causa, (m.get(r.causa) || 0) + val(r)));
+      const tot = [...m.values()].reduce((a, b) => a + b, 0);
+      return [...m].sort((a, b) => b[1] - a[1]).map(([c, v]) => { const q = tot ? Math.round(v / tot * 100) : 0, [cc, cd] = split(c, list); return `<tr><td><b>${esc(cc)}</b> <span class="mut">${esc(cd)}</span></td><td class="num">${fv(v)}</td><td><div class="bar ${tipo === "Fermo" ? "f" : ""}"><i style="width:${q}%"></i></div></td><td class="num">${q}%</td></tr>`; }).join("") || `<tr><td colspan="4" class="mut">Nessun dato</td></tr>`;
+    };
+    $("#sumScraps").innerHTML = cau("Scarto", r => r.pezzi || 0, N, data.scarti);
+    $("#sumStops").innerHTML = cau("Fermo", r => r.durataSec || 0, fmt, data.fermi);
+  }
+  const MAXR = 300, pill = {Produzione: "ok", Scarto: "sc", Fermo: "fe"};
+  $("#rows").innerHTML = f.list.slice(0, MAXR).map(r => { const d = new Date(r.ts), [pc, pd] = split(r.prodotto, data.prodotti); return `<tr><td>${d.toLocaleDateString("it-IT")}<br><span class="mut">${d.toLocaleTimeString("it-IT", {hour: "2-digit", minute: "2-digit"})}</span></td><td><span class="pill ${pill[r.tipo]}">${r.tipo}</span></td><td>${esc(r.operatore)}</td><td><b>${esc(pc)}</b><br><span class="mut">${esc(pd)}</span></td><td>${esc(r.causa)}</td><td class="num">${r.tipo === "Fermo" ? fmt(r.durataSec) : N(r.pezzi || 0)}</td><td>${role === "admin" ? `<button class="link" data-rdel="${r.id}">Elimina</button>` : ""}</td></tr>`; }).join("") + (f.list.length > MAXR ? `<tr><td colspan="7" class="mut">Mostrate le ultime ${MAXR} registrazioni su ${N(f.list.length)}: restringi il periodo o esporta in Excel.</td></tr>` : "") || `<tr><td colspan="7" class="mut">Nessuna registrazione${f.attivo ? " con i filtri selezionati" : ""}</td></tr>`;
   document.querySelectorAll("[data-rdel]").forEach(b => b.onclick = () => { if (confirm("Eliminare la registrazione?")) { data.registrazioni = data.registrazioni.filter(x => x.id !== b.dataset.rdel); save(); } });
-  $("#exp").disabled = !f.list.length;
+  const prod = prodList();
+  $("#exp").disabled = $("#expx").disabled = !prod.length;
+  $("#erp").disabled = !filtroBase().some(r => r.tipo !== "Produzione");
   $("#clr").classList.toggle("hidden", !f.attivo);
-  $("#exp").textContent = f.attivo ? `Esporta CSV (${f.list.length} righe)` : "Esporta CSV (Excel)";
+  $("#exp").textContent = `CSV prodotti (${prod.length})`; $("#expx").textContent = `Excel prodotti (${prod.length})`;
 }
 
 /* ---------- Avvio ---------- */
 (async () => {
+  folderStatus("none");
   try { const s = localStorage.getItem(LS); if (s) data = {...data, ...JSON.parse(s)}; } catch {}
   const h = await kvGet("dir").catch(() => null);
   if (h) {
     if (await h.queryPermission({mode: "readwrite"}) === "granted") await connect(h);
-    else { $("#fname").textContent = "📁 " + h.name + " (clicca Riattiva accesso)"; $("#reauth").classList.remove("hidden"); }
+    else folderStatus("need", h.name);
   }
   const r = sessionStorage.getItem("ruolo"); if (r) start(r);
 })();
