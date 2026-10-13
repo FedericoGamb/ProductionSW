@@ -1,0 +1,37 @@
+GESTIONE PRODUZIONE - VERSIONE LOCALE
+=====================================
+
+AVVIO
+1. Estrai questa cartella dove preferisci sul PC.
+2. Apri "index.html" con Google Chrome o Microsoft Edge (doppio clic o trascina nel browser).
+   Non serve internet.
+
+ACCESSO
+- Admin:     utente "admin"  password "1234"
+- Operatore: utente "user"   password "1234"
+
+FUNZIONI OPERATORE
+- Pezzi prodotti: numero di pezzi e pulsante "Registra produzione"
+- Pezzi scartati: numero e causa di scarto
+- Fermo macchina: ore, minuti, secondi e causa di fermo
+- "Esporta CSV (Excel)" scarica le registrazioni apribili in Excel.
+  Con i campi "Dal" e "Al" sopra la tabella puoi esportare solo un periodo:
+  la tabella e il file esportato mostrano solo le registrazioni di quel periodo.
+  Senza date vengono esportate tutte. Il pulsante "✕" rimuove il filtro.
+  Il file registrazioni.csv nella cartella collegata contiene sempre tutti i dati.
+
+COLLEGARE UNA CARTELLA PER I DATI
+1. Dopo l'accesso clicca "Collega cartella" e scegli una cartella (anche di rete o condivisa).
+2. Conferma il permesso di modifica.
+3. L'app salva automaticamente ad ogni modifica:
+   - produzione.json     -> tutti i dati (operatori, prodotti, cause, registrazioni)
+   - registrazioni.csv   -> registrazioni pronte da aprire in Excel
+4. Alla riapertura il browser potrebbe chiedere di cliccare "Riattiva accesso".
+
+LOGO AZIENDALE
+Il logo Butori Serafino è già integrato nell'app: versione scura nella schermata
+di accesso e versione bianca nella barra superiore.
+
+BACKUP
+Basta copiare il file produzione.json. Più PC che collegano la stessa cartella condivisa
+leggono gli stessi dati all'avvio (evitare di scrivere contemporaneamente da più postazioni).
