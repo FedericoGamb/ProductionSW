@@ -195,8 +195,8 @@ if (typeof ReportCharts === "undefined") window.ReportCharts = (() => {
 <script>
 const $ = s => document.querySelector(s);
 /* ===== CONFIGURAZIONE ONLINE (Supabase): incolla qui i due valori, vedi README. Se restano vuoti il programma lavora in locale ===== */
-const SUPABASE_URL = "https://jetpjqnmiazlvkfhehni.supabase.co";
-const SUPABASE_KEY = "sb_publishable_kc8BZ0gKAdkfg6pNg_DZLg_WrmZxcGe";
+const SUPABASE_URL = "";
+const SUPABASE_KEY = "";
 const CLOUD = !!(SUPABASE_URL && SUPABASE_KEY);
 const uid = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
