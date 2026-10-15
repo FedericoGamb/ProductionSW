@@ -38,6 +38,8 @@ label.n{flex:1;font-size:12px;color:var(--mut)}.hidden{display:none!important}
 .sel{display:flex;gap:10px;flex-wrap:wrap}
 .chip{display:flex;align-items:center;gap:8px;background:var(--bg);border-radius:10px;padding:8px 12px;font-size:14px}
 .chip svg{width:24px;height:24px;color:var(--p)}
+.pick.rep{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}.pick.rep .pc{min-height:220px;gap:14px}.pick.rep .pc svg{width:76px;height:76px}.pick.rep .pn{font-size:20px}
+select.mini{width:auto;padding:5px 8px;font-size:13px}.row.wrap{flex-wrap:wrap}.row.wrap .field{flex:1 1 130px;width:auto;min-width:0}
 .chg{background:none;border:0;color:var(--p);text-decoration:underline;cursor:pointer;font-size:13px}
 .hint{display:block;margin-top:8px}
 .st{min-width:56px;min-height:52px;font-size:22px}
@@ -76,6 +78,8 @@ label.n{flex:1;font-size:12px;color:var(--mut)}.hidden{display:none!important}
 .sh{margin:0 0 6px;font-size:15px;color:var(--p)}
 .pill{display:inline-block;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600;color:#fff}.pill.ok{background:var(--chart-production)}.pill.sc{background:var(--chart-scrap)}.pill.fe{background:var(--chart-stop)}
 .bar{height:8px;min-width:70px;background:var(--bg);border-radius:4px}.bar i{display:block;height:100%;border-radius:4px;background:var(--chart-scrap)}.bar.f i{background:var(--chart-stop)}
+#folderBox[data-state=local]{border-left-color:#b7791f}#folderBox[data-state=local] #fstat{color:#8a5a12}
+#bkBox{border-left:6px solid var(--b);padding:14px 20px}#bkBox[data-state=ok]{border-left-color:var(--ok)}#bkBox[data-state=due]{border-left-color:#b7791f}#bkBox b{font-size:15px}
 </style>
 </head>
 <body>
@@ -101,6 +105,10 @@ label.n{flex:1;font-size:12px;color:var(--mut)}.hidden{display:none!important}
       <div><b id="fstat">Cartella non collegata: collega la cartella</b><div class="mut" id="fsub"></div></div>
       <div class="row"><button class="btn" id="pick">Collega cartella</button><button class="btn hidden" id="reauth">Riattiva accesso</button></div>
     </section>
+    <section class="card folder" id="bkBox" data-state="ok" role="status">
+      <div><b>Backup dati</b><div class="mut" id="bkSub"></div></div>
+      <div class="row"><button class="btn" id="bkExp">Esporta backup</button><button class="btn hidden" id="bkImp">Importa backup</button><input type="file" id="bkFile" accept=".json,application/json" hidden></div>
+    </section>
     <div id="view"></div>
     <section class="hidden" id="reports">
       <div class="rp-head"><h2 style="margin:0">Report</h2>
@@ -113,6 +121,7 @@ label.n{flex:1;font-size:12px;color:var(--mut)}.hidden{display:none!important}
         <div class="frow">
           <label class="fl">Operatore<select class="field f" id="fo"></select></label>
           <label class="fl">Prodotto<select class="field f" id="fp"></select></label>
+          <label class="fl">Reparto<select class="field f" id="fr"><option value="">Tutti i reparti</option><option value="stampaggio">Stampaggio</option><option value="officina">Officina</option></select></label>
           <label class="fl" id="fcw">Causa<select class="field f" id="fc"></select></label>
           <button class="btn hidden" id="clr" style="padding:8px 12px">Azzera filtri</button>
         </div>
@@ -122,7 +131,7 @@ label.n{flex:1;font-size:12px;color:var(--mut)}.hidden{display:none!important}
       <div class="card">
         <div class="chart-menu" id="reportMenu" role="tablist" aria-label="Visualizzazione report"><button class="tab on" id="sumTab" role="tab" aria-selected="true" aria-controls="reportSummary" data-report="summary">Riepilogo</button><button class="tab" id="dataTab" role="tab" aria-selected="false" aria-controls="reportTable" data-report="data">Dettaglio</button><button class="tab" id="chartsTab" role="tab" aria-selected="false" aria-controls="reportCharts" data-report="charts">Grafici</button></div>
         <div id="reportSummary" role="tabpanel" aria-labelledby="sumTab">
-          <div class="row" style="flex-wrap:wrap;margin-bottom:12px"><label for="sumGroup" class="mut">Raggruppa per</label><select id="sumGroup" class="field f"><option value="giorno">Giorno</option><option value="operatore">Operatore</option><option value="prodotto">Prodotto</option></select></div>
+          <div class="row" style="flex-wrap:wrap;margin-bottom:12px"><label for="sumGroup" class="mut">Raggruppa per</label><select id="sumGroup" class="field f"><option value="giorno">Giorno</option><option value="operatore">Operatore</option><option value="prodotto">Prodotto</option><option value="reparto">Reparto</option></select></div>
           <div class="tw"><table><thead><tr><th id="sumHead">Giorno</th><th class="num">Prodotti</th><th class="num">Scartati</th><th class="num">% scarto</th><th class="num">Fermi</th><th class="num">Tempo di fermo</th></tr></thead><tbody id="sumRows"></tbody></table></div>
           <div class="grid2" style="margin-top:24px">
             <div><h3 class="sh">Scarti per causa</h3><div class="tw"><table><thead><tr><th>Causa</th><th class="num">Pezzi</th><th>Incidenza</th><th></th></tr></thead><tbody id="sumScraps"></tbody></table></div></div>
@@ -185,7 +194,11 @@ if (typeof ReportCharts === "undefined") window.ReportCharts = (() => {
 </script>
 <script>
 const $ = s => document.querySelector(s);
-const uid = () => Math.random().toString(36).slice(2, 10);
+/* ===== CONFIGURAZIONE ONLINE (Supabase): incolla qui i due valori, vedi README. Se restano vuoti il programma lavora in locale ===== */
+const SUPABASE_URL = "https://jetpjqnmiazlvkfhehni.supabase.co";
+const SUPABASE_KEY = "sb_publishable_kc8BZ0gKAdkfg6pNg_DZLg_WrmZxcGe";
+const CLOUD = !!(SUPABASE_URL && SUPABASE_KEY);
+const uid = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const LS = "produzione-data-v1";
 let data = {operatori:[],prodotti:[],scarti:[],fermi:[],registrazioni:[]};
@@ -225,34 +238,151 @@ async function writeFolder() {
 }
 async function save() {
   localStorage.setItem(LS, JSON.stringify(data));
+  if (CLOUD) { render(); cloudStatus(); pushCloud(); return; }
   try { await writeFolder(); if (dir) folderStatus("ok", dir.name); } catch (e) { folderStatus("err", dir && dir.name); alert("Impossibile salvare nella cartella: ricollega la cartella.\n" + e.message); }
   render();
 }
+function fsDiag() {
+  if (window.showDirectoryPicker) return "";
+  const ua = navigator.userAgent, m = ua.match(/(EdgA|Edg|Chrome|CriOS|SamsungBrowser|Firefox|FxiOS)\/(\d+)/), br = m ? m[1] + " " + m[2] : "sconosciuto";
+  if (!window.isSecureContext) return `La pagina non è aperta da un indirizzo sicuro (indirizzo attuale: ${location.protocol}//…). Aprila da un indirizzo che inizia con https://\nBrowser rilevato: ${br}`;
+  if (/; wv\)/.test(ua) || /FB_IAB|Instagram|Line\//.test(ua)) return `La pagina è aperta dentro un'altra app. Copia l'indirizzo e aprilo direttamente in Chrome.\nBrowser rilevato: ${br}`;
+  if (/SamsungBrowser|Firefox|FxiOS|CriOS/.test(ua) || (/Safari\//.test(ua) && !/Chrome\/|EdgA|Edg\//.test(ua))) return `Questo browser non permette di collegare le cartelle: serve Chrome o Edge.\nBrowser rilevato: ${br}`;
+  return `Il browser non offre il collegamento alle cartelle: su tablet Android serve Chrome o Edge versione 132 o successiva (aggiornalo dal Play Store).\nBrowser rilevato: ${br}`;
+}
 function folderStatus(state, name = "") {
+  if (CLOUD) return;
+  if (state === "none" && !window.showDirectoryPicker) state = "local";
   let t = {ok: ["Cartella collegata correttamente", `I dati vengono salvati in «${name}»`],
     need: ["Cartella scollegata: riattiva l'accesso", `Premi «Riattiva accesso» per tornare a salvare in «${name}»`],
     err: ["Salvataggio nella cartella non riuscito: ricollega la cartella", "Controlla che la cartella esista ancora, poi premi «Ricollega cartella»"],
+    local: ["Dati salvati solo in questo browser", "Questo dispositivo non può collegare una cartella: scarica il backup a fine turno per non perdere i dati"],
     none: ["Cartella non collegata: collega la cartella", "Finché non la colleghi, i dati restano solo in questo browser"]}[state];
-  if (state === "none" && !window.showDirectoryPicker) t = [t[0], "Questo browser non permette di collegare la cartella: usa Chrome o Edge"];
+  
   $("#folderBox").dataset.state = state; $("#fstat").textContent = t[0]; $("#fsub").textContent = t[1];
   $("#pick").textContent = state === "ok" ? "Cambia cartella" : state === "err" ? "Ricollega cartella" : "Collega cartella";
-  $("#reauth").classList.toggle("hidden", state !== "need");
+  $("#reauth").classList.toggle("hidden", state !== "need"); $("#pick").classList.toggle("hidden", state === "local");
 }
 document.addEventListener("visibilitychange", async () => { if (!dir || document.hidden) return; try { if (await dir.queryPermission({mode: "readwrite"}) !== "granted") folderStatus("need", dir.name); } catch { folderStatus("err", dir.name); } });
 async function connect(h) { dir = h; await readFolder(); folderStatus("ok", h.name); render(); }
 
 $("#pick").onclick = async () => {
-  if (!window.showDirectoryPicker) return alert("Usa Google Chrome o Microsoft Edge per collegare una cartella.");
+  if (CLOUD) return syncNow();
+  if (!window.showDirectoryPicker) return alert(fsDiag());
   try { const h = await window.showDirectoryPicker({mode: "readwrite"}); await kvSet("dir", h); await connect(h); } catch {}
 };
 $("#reauth").onclick = async () => { const h = await kvGet("dir"); if (h && await h.requestPermission({mode: "readwrite"}) === "granted") connect(h); };
 
 function setLogo(src) { document.querySelectorAll("[data-logo]").forEach(e => e.innerHTML = `<img src="${src}" alt="Logo">`); }
 
+/* ---------- Online (Supabase) ---------- */
+const LSS = "produzione-sessione", LSY = "produzione-sincronizzati", KEYS = ["operatori", "prodotti", "scarti", "fermi", "registrazioni"];
+let sess = null, pushing = false;
+const synced = Object.fromEntries(KEYS.map(k => [k, new Set()]));
+const isAdm = () => !!sess && sess.role === "admin";
+const cols = () => KEYS.filter(k => isAdm() || k === "registrazioni");
+const pendingOf = k => data[k].filter(x => !synced[k].has(x.id));
+const delOf = k => { const have = new Set(data[k].map(x => x.id)); return [...synced[k]].filter(id => !have.has(id)); };
+const cloudPending = () => cols().reduce((n, k) => n + pendingOf(k).length + delOf(k).length, 0);
+const saveSync = () => { try { localStorage.setItem(LSY, JSON.stringify(Object.fromEntries(KEYS.map(k => [k, [...synced[k]]])))); } catch {} };
+function loadSess() { try { sess = JSON.parse(localStorage.getItem(LSS)); const y = JSON.parse(localStorage.getItem(LSY)) || {}; KEYS.forEach(k => synced[k] = new Set(y[k] || [])); } catch { sess = null; } }
+async function auth(grant, body) {
+  const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=${grant}`, {method: "POST", headers: {apikey: SUPABASE_KEY, "Content-Type": "application/json"}, body: JSON.stringify(body)});
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw Object.assign(new Error(j.error_description || j.msg || j.message || "errore " + r.status), {http: r.status, auth: true});
+  const u = j.user || {};
+  sess = {token: j.access_token, refresh: j.refresh_token, exp: Date.now() + Math.max(60, (j.expires_in || 3600) - 60) * 1000, role: (u.app_metadata && u.app_metadata.ruolo) || "", email: u.email || ""};
+  localStorage.setItem(LSS, JSON.stringify(sess));
+}
+let refreshing = null;
+const refresh = () => refreshing || (refreshing = auth("refresh_token", {refresh_token: sess.refresh}).finally(() => { refreshing = null; }));
+async function api(path, opts = {}, retry = true) {
+  if (Date.now() > sess.exp) await refresh();
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {...opts, headers: {apikey: SUPABASE_KEY, Authorization: "Bearer " + sess.token, "Content-Type": "application/json", ...opts.headers}});
+  if (r.status === 401 && retry) { await refresh(); return api(path, opts, false); }
+  if (!r.ok) { const raw = await r.text().catch(() => ""); let m = raw; try { m = JSON.parse(raw).message || raw; } catch {} throw Object.assign(new Error((m || "errore " + r.status).slice(0, 160)), {http: r.status}); }
+  return r;
+}
+/* Nel database il reparto del prodotto sta nella descrizione, con prefisso "stampaggio::" o "officina::": nessuna colonna in più. */
+const REPTAG = /^(stampaggio|officina)::([\s\S]*)$/;
+const toRow = (k, x) => k === "registrazioni" ? {id: x.id, ts: x.ts, operatore: x.operatore, prodotto: x.prodotto, tipo: x.tipo, causa: x.causa || "", pezzi: x.pezzi ?? null, durata_sec: x.durataSec ?? null} : {id: x.id, tipo: k, a: x.a, b: k === "prodotti" && x.reparto ? x.reparto + "::" + x.b : x.b};
+const fromAna = (k, x) => { const m = k === "prodotti" && REPTAG.exec(x.b); return m ? {id: x.id, a: x.a, b: m[2], reparto: m[1]} : {id: x.id, a: x.a, b: x.b}; };
+const fromReg = r => { const o = {id: r.id, ts: new Date(r.ts).toISOString(), operatore: r.operatore, prodotto: r.prodotto, tipo: r.tipo, causa: r.causa || ""}; if (r.pezzi != null) o.pezzi = r.pezzi; if (r.durata_sec != null) o.durataSec = r.durata_sec; return o; };
+async function getAll(table, order) {
+  let out = [];
+  for (let from = 0; ; from += 1000) {
+    let rows;
+    try { rows = await (await api(`${table}?select=*&order=${order}`, {headers: {"Range-Unit": "items", Range: `${from}-${from + 999}`}})).json(); }
+    catch (e) { if (e.http === 416) break; throw e; }
+    out = out.concat(rows); if (rows.length < 1000) break;
+  }
+  return out;
+}
+async function pullCloud() {
+  const adm = isAdm(), ana = await getAll("anagrafica", "creato.asc,id.asc"), srv = {registrazioni: adm ? (await getAll("registrazioni", "id")).map(fromReg) : []};
+  KEYS.slice(0, 4).forEach(k => srv[k] = ana.filter(x => x.tipo === k).map(x => fromAna(k, x)));
+  KEYS.forEach(k => { const have = new Set(srv[k].map(x => x.id)), pend = adm || k === "registrazioni" ? data[k].filter(x => !synced[k].has(x.id) && !have.has(x.id)) : []; data[k] = [...srv[k], ...pend]; synced[k] = have; });
+  data.registrazioni.sort((a, b) => b.ts.localeCompare(a.ts));
+  localStorage.setItem(LS, JSON.stringify(data)); saveSync();
+}
+/* Inserimento semplice (il ruolo reparto non può usare ON CONFLICT). Un doppione dà 409: si riprova riga per riga e quelle già presenti valgono come inviate. */
+async function postRows(table, rows) {
+  const send = part => api(table, {method: "POST", headers: {Prefer: "return=minimal"}, body: JSON.stringify(part)});
+  try { await send(rows); }
+  catch (e) {
+    if (e.http !== 409) throw e;
+    if (rows.length === 1) return;
+    for (const row of rows) { try { await send([row]); } catch (e2) { if (e2.http !== 409) throw e2; } }
+  }
+}
+let pushP = null;
+const pushCloud = () => pushP || (pushP = pushLoop().finally(() => { pushP = null; }));
+async function pushLoop() {
+  if (!sess) return;
+  for (let round = 0; round < 6; round++) {
+    let err = "";
+    for (const k of cols()) {
+      const table = k === "registrazioni" ? "registrazioni" : "anagrafica";
+      try {
+        const add = pendingOf(k), del = delOf(k);
+        for (let i = 0; i < add.length; i += 200) { const part = add.slice(i, i + 200); await postRows(table, part.map(x => toRow(k, x))); part.forEach(x => synced[k].add(x.id)); saveSync(); }
+        for (let i = 0; i < del.length; i += 50) { const part = del.slice(i, i + 50); await api(`${table}?id=in.(${part.join(",")})`, {method: "DELETE"}); part.forEach(id => synced[k].delete(id)); saveSync(); }
+      } catch (e) { err = e.auth || e.http === 401 ? "Sessione scaduta: esci e accedi di nuovo" : e instanceof TypeError ? "connessione assente" : e.message; }
+    }
+    cloudStatus(err);
+    if (err || !cloudPending()) return;
+  }
+}
+function cloudStatus(err = "") {
+  const n = cloudPending(), st = err ? "err" : n ? "need" : "ok", fm = n === 1 ? "1 elemento" : n + " elementi", exp = err.startsWith("Sessione scaduta");
+  const t = {ok: ["Collegato al database", "Dati sincronizzati alle " + new Date().toLocaleTimeString("it-IT", {hour: "2-digit", minute: "2-digit"})],
+    need: ["Invio in corso", fm + " da inviare al database"],
+    err: [exp ? "Sessione scaduta" : "Database non raggiungibile: riprovo da solo", (n ? fm + " da inviare. " : "") + err]}[st];
+  $("#folderBox").dataset.state = st; $("#fstat").textContent = t[0]; $("#fsub").textContent = t[1];
+  $("#pick").textContent = "Aggiorna dati"; $("#pick").classList.remove("hidden"); $("#reauth").classList.add("hidden");
+}
+async function syncNow(quiet) {
+  try { await pushCloud(); await pullCloud(); cloudStatus(); } catch (e) { cloudStatus(e.message); }
+  const busy = role === "operatore" ? !!opState.op : page !== "report";
+  if (!quiet || !busy) render();
+}
+async function cloudLogin() {
+  const err = $("#lerr"); err.textContent = "";
+  try { await auth("password", {email: $("#u").value.trim(), password: $("#pw").value}); }
+  catch (e) { return err.textContent = e.auth && [400, 401, 422].includes(e.http) ? "Credenziali non valide" : "Impossibile collegarsi al database: " + e.message; }
+  const out = m => { sess = null; localStorage.removeItem(LSS); err.textContent = m; };
+  if (!["admin", "operatore"].includes(sess.role)) return out("Utente senza ruolo assegnato: vedi il README");
+  try { await pullCloud(); } catch (e) { return out("Accesso riuscito, ma la lettura dei dati non è riuscita: " + e.message + " (hai eseguito lo script SQL?)"); }
+  cloudStatus(); start(sess.role); pushCloud();
+}
+
 /* ---------- Login ---------- */
 function login(u, p) { if (u === "admin" && p === "1234") return "admin"; if (u === "user" && p === "1234") return "operatore"; return null; }
-$("#loginForm").onsubmit = e => { e.preventDefault(); const r = login($("#u").value.trim(), $("#pw").value); if (!r) return $("#lerr").textContent = "Credenziali non valide"; sessionStorage.setItem("ruolo", r); start(r); };
-$("#logout").onclick = () => { sessionStorage.removeItem("ruolo"); location.reload(); };
+$("#loginForm").onsubmit = e => { e.preventDefault(); if (CLOUD) return cloudLogin(); const r = login($("#u").value.trim(), $("#pw").value); if (!r) return $("#lerr").textContent = "Credenziali non valide"; sessionStorage.setItem("ruolo", r); start(r); };
+$("#logout").onclick = () => {
+  if (CLOUD) { const n = cloudPending(); if (n && !confirm(`Ci sono ${n} elementi non ancora inviati al database: verranno inviati al prossimo accesso.\nUscire comunque?`)) return; if (!n) { localStorage.removeItem(LS); localStorage.removeItem(LSY); } localStorage.removeItem(LSS); }
+  sessionStorage.removeItem("ruolo"); location.reload();
+};
 function start(r) {
   role = r; $("#login").classList.add("hidden"); $("#app").classList.remove("hidden");
   $("#who").textContent = (r === "admin" ? "Amministratore" : "Operatore") + " · " + new Date().toLocaleDateString("it-IT", {weekday:"long",day:"numeric",month:"long",year:"numeric"});
@@ -270,16 +400,17 @@ function csv(list = data.registrazioni) {
 let tipoF = "";
 let reportMode = "summary", page = "setup";
 function filtro() {
-  const d = $("#fd").value, a = $("#fa").value, o = $("#fo").value, p = $("#fp").value, c = $("#fc").value;
+  const d = $("#fd").value, a = $("#fa").value, o = $("#fo").value, p = $("#fp").value, c = $("#fc").value, rp = $("#fr").value;
   const list = data.registrazioni.filter(r => {
     const g = iso(new Date(r.ts));
     if (d && g < d) return false; if (a && g > a) return false;
     if (tipoF && r.tipo !== tipoF) return false;
     if (o && r.operatore !== o) return false; if (p && r.prodotto !== p) return false;
+    if (rp && repOf(r.prodotto) !== rp) return false;
     if (c && r.causa !== c) return false;
     return true;
   });
-  return {list, attivo: !!(d || a || o || p || c || tipoF)};
+  return {list, attivo: !!(d || a || o || p || c || rp || tipoF)};
 }
 function filtroBase() { const t = tipoF; tipoF = ""; const f = filtro(); tipoF = t; return f.list; }
 const stamp = () => { const p = [$("#fd").value && "dal_" + $("#fd").value, $("#fa").value && "al_" + $("#fa").value].filter(Boolean).join("_"); return (p ? p + "_" : "") + new Date().toISOString().slice(0,10); };
@@ -315,6 +446,10 @@ function xlsx(sheets) {
   ];
   return zip(f);
 }
+/* Reparti: il prodotto ha reparto "stampaggio" o "officina" (campo opzionale: i prodotti vecchi senza reparto compaiono in entrambi) */
+const REPARTI = [["stampaggio", "Stampaggio"], ["officina", "Officina"]];
+const repName = k => (REPARTI.find(r => r[0] === k) || [])[1] || "";
+const repOf = label => (data.prodotti.find(p => p.a + " " + p.b === label) || {}).reparto || "";
 /* Separa codice e descrizione salvati come "CODICE descrizione" */
 const split = (txt, list) => { const it = list.find(i => i.a + " " + i.b === txt); if (it) return [it.a, it.b]; const k = String(txt).indexOf(" "); return k < 0 ? [txt, ""] : [txt.slice(0, k), txt.slice(k + 1)]; };
 const dataIt = r => new Date(r.ts).toLocaleDateString("it-IT"), oraIt = r => new Date(r.ts).toLocaleTimeString("it-IT");
@@ -335,22 +470,56 @@ const prodList = () => filtroBase().filter(r => r.tipo === "Produzione");
 $("#exp").onclick = () => dl(new Blob(["\ufeff" + csv(prodList())], {type: "text/csv;charset=utf-8"}), `produzione_${stamp()}.csv`);
 $("#expx").onclick = () => dl(reportXlsx(prodList()), `produzione_${stamp()}.xlsx`);
 $("#erp").onclick = () => dl(erpXlsx(filtroBase()), `ERP_scarti_fermi_${stamp()}.xlsx`);
-["#fd","#fa","#fo","#fp","#fc"].forEach(id => $(id).onchange = $(id).oninput = render);
+["#fd","#fa","#fo","#fp","#fr","#fc"].forEach(id => $(id).onchange = $(id).oninput = render);
 $("#tabs").onclick = e => { const t = e.target.closest("[data-t]"); if (!t) return; tipoF = t.dataset.t; $("#fc").value = ""; document.querySelectorAll(".tab").forEach(b => b.classList.toggle("on", b === t)); render(); };
-$("#clr").onclick = () => { ["#fd","#fa","#fo","#fp","#fc"].forEach(id => $(id).value = ""); tipoF = ""; document.querySelectorAll(".tab").forEach((b, i) => b.classList.toggle("on", !i)); render(); };
+$("#clr").onclick = () => { ["#fd","#fa","#fo","#fp","#fr","#fc"].forEach(id => $(id).value = ""); tipoF = ""; document.querySelectorAll(".tab").forEach((b, i) => b.classList.toggle("on", !i)); render(); };
 $("#reportMenu").onclick = e => { const button = e.target.closest("[data-report]"); if (!button || !canViewReports(role)) return; reportMode = button.dataset.report; render(); };
 $("#chartGroup").onchange = $("#sumGroup").onchange = render;
-$("#nav").onclick = e => { const b = e.target.closest("[data-page]"); if (b) { page = b.dataset.page; render(); } };
+const LSB = "produzione-last-backup";
+function backupStatus() {
+  const last = localStorage.getItem(LSB) || "", n = data.registrazioni.filter(r => r.ts > last).length, tot = data.registrazioni.length;
+  $("#bkBox").dataset.state = n ? "due" : "ok";
+  $("#bkSub").textContent = (last ? `Ultimo backup: ${new Date(last).toLocaleString("it-IT", {dateStyle: "short", timeStyle: "short"})}. ` : "Nessun backup scaricato da questo dispositivo. ")
+    + (n ? `${n} registrazion${n === 1 ? "e" : "i"} non ancora nel backup.` : tot ? "Tutte le registrazioni sono nel backup." : "Nessuna registrazione da salvare.");
+}
+$("#bkExp").onclick = () => {
+  const d = new Date(), p2 = n => String(n).padStart(2, "0"), name = `produzione-backup-${iso(d)}-${p2(d.getHours())}${p2(d.getMinutes())}.json`, a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], {type: "application/json"})); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  localStorage.setItem(LSB, d.toISOString()); backupStatus();
+  alert("Backup scaricato: " + name + "\nLo trovi nella cartella Download del dispositivo.");
+};
+$("#bkImp").onclick = () => $("#bkFile").click();
+$("#bkFile").onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f || role !== "admin") return;
+  let inc; try { inc = JSON.parse(await f.text()); } catch { return alert("Il file non è un backup valido."); }
+  const L = ["operatori", "prodotti", "scarti", "fermi", "registrazioni"];
+  if (!inc || typeof inc !== "object" || !L.some(k => Array.isArray(inc[k]))) return alert("Il file non è un backup valido.");
+  const okAna = x => x && typeof x.id === "string" && /^[\w-]{1,40}$/.test(x.id) && typeof x.a === "string" && typeof x.b === "string";
+  const okReg = x => x && typeof x.id === "string" && /^[\w-]{1,40}$/.test(x.id) && typeof x.ts === "string" && !isNaN(new Date(x.ts)) && ["Produzione", "Scarto", "Fermo"].includes(x.tipo) && typeof x.operatore === "string" && typeof x.prodotto === "string";
+  const nuovi = {}, pulisci = x => { const o = {id: x.id, a: x.a, b: x.b}; if (REPARTI.some(r => r[0] === x.reparto)) o.reparto = x.reparto; return o; };
+  L.forEach(k => { const have = new Set((data[k] || []).map(x => x.id)); nuovi[k] = (Array.isArray(inc[k]) ? inc[k] : []).filter(x => (k === "registrazioni" ? okReg(x) : okAna(x)) && !have.has(x.id)); if (k === "prodotti") nuovi[k] = nuovi[k].map(pulisci); });
+  if (!L.some(k => nuovi[k].length)) return alert("Nessun dato nuovo: tutto quello che c'è nel file è già presente.");
+  const riga = `${nuovi.operatori.length} operatori, ${nuovi.prodotti.length} prodotti, ${nuovi.scarti.length} cause di scarto, ${nuovi.fermi.length} cause di fermo, ${nuovi.registrazioni.length} registrazioni`;
+  if (!confirm(`Dati nuovi da aggiungere:\n${riga}.\nNulla verrà cancellato. Procedere?`)) return;
+  L.forEach(k => { if (nuovi[k].length) data[k] = [...(data[k] || []), ...nuovi[k]]; });
+  data.registrazioni.sort((a, b) => b.ts.localeCompare(a.ts));
+  await save(); alert("Backup importato: " + riga + ".");
+};
+$("#nav").onclick = e => { const b = e.target.closest("[data-page]"); if (b) { page = b.dataset.page; render(); if (CLOUD && page === "report") syncNow(); } };
 $("#presets").onclick = e => { const b = e.target.closest("[data-range]"); if (!b) return; const t = new Date(), x = new Date(t); if (b.dataset.range === "7") x.setDate(x.getDate() - 6); if (b.dataset.range === "month") x.setDate(1); $("#fd").value = iso(x); $("#fa").value = iso(t); render(); };
 function fillSel(id, label, vals) { const el = $(id), cur = el.value; el.innerHTML = `<option value="">${label}</option>` + [...new Set(vals)].filter(Boolean).sort().map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join(""); el.value = [...el.options].some(o => o.value === cur) ? cur : ""; }
 const opts = (list, label) => `<option value="">${label}</option>` + list.map(i => `<option value="${esc(i.a + " " + i.b)}">${esc(i.a)} — ${esc(i.b)}</option>`).join("");
 
 /* ---------- Render ---------- */
 const REG = [["operatori","Operatori","Nome","Cognome"],["prodotti","Prodotti","Codice","Descrizione"],["scarti","Cause di scarto","Codice","Descrizione"],["fermi","Cause di fermo","Codice","Descrizione"]];
-let opState = {op:"", prod:""};
+let opState = {op:"", rep:"", prod:""};
 const SVG = d => `<svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const ICON_USER = SVG('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>');
 const ICON_CALC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2.5" width="14" height="19" rx="2.5"/><rect x="8" y="5.5" width="8" height="3.5" rx=".8"/><path d="M8.5 13h.01M12 13h.01M15.5 13h.01M8.5 16.5h.01M12 16.5h.01M15.5 16.5h.01"/></svg>';
+const ICON_STAMP = SVG('<rect x="5" y="3" width="14" height="5" rx="1"/><rect x="5" y="16" width="14" height="5" rx="1"/><path d="M12 8v8M9.5 13.5L12 16l2.5-2.5"/>');
+const ICON_TOOL = SVG('<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>');
+const REP_ICON = {stampaggio: ICON_STAMP, officina: ICON_TOOL};
 const ICON_BOX = SVG('<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5L12 12l8-4.5M12 12v9"/>');
 function openKeypad(input, title, max) {
   if ($("#kp")) return;
@@ -379,13 +548,14 @@ function openKeypad(input, title, max) {
   show(); back.querySelector('[data-k="ok"]').focus();
 }
 function renderOperatore(v) {
-  const o = opState, step = !o.op ? 1 : !o.prod ? 2 : 3;
+  const o = opState, step = !o.op ? 1 : !o.rep ? 2 : !o.prod ? 3 : 4;
   const cards = (list, icon, label, vuoto) => list.length ? `<div class="pick">${list.map(i => `<button type="button" class="pc" data-pick="${i.id}">${icon}<span class="pn">${label(i)}</span></button>`).join("")}</div>` : `<p class="mut">${vuoto}</p>`;
   const [pc, pd] = o.prod ? split(o.prod, data.prodotti) : ["", ""];
-  const chips = (o.op ? `<div class="chip">${ICON_USER}<b>${esc(o.op)}</b><button type="button" class="chg" data-back="op">Cambia</button></div>` : "") + (o.prod ? `<div class="chip">${ICON_BOX}<span><b>${esc(pc)}</b> ${esc(pd)}</span><button type="button" class="chg" data-back="prod">Cambia</button></div>` : "");
+  const chips = (o.op ? `<div class="chip">${ICON_USER}<b>${esc(o.op)}</b><button type="button" class="chg" data-back="op">Cambia</button></div>` : "") + (o.rep ? `<div class="chip">${REP_ICON[o.rep]}<b>${esc(repName(o.rep))}</b><button type="button" class="chg" data-back="rep">Cambia</button></div>` : "") + (o.prod ? `<div class="chip">${ICON_BOX}<span><b>${esc(pc)}</b> ${esc(pd)}</span><button type="button" class="chg" data-back="prod">Cambia</button></div>` : "");
   const stepper = (m, id, p, val, ph) => `<div class="row"><button type="button" class="btn st" id="${m}">−</button><span class="kf"><input class="field" id="${id}" type="number" min="0" value="${val}" placeholder="${ph}" readonly inputmode="none" aria-haspopup="dialog" style="text-align:center;font-weight:700;font-size:24px;min-height:52px;padding:0 38px;cursor:pointer">${ICON_CALC}</span><button type="button" class="btn st" id="${p}">+</button></div>`;
   if (step === 1) v.innerHTML = `<section class="card"><h2>Chi sei?</h2>${cards(data.operatori, ICON_USER, i => `${esc(i.a)} ${esc(i.b)}`, "Nessun operatore. Chiedi all'amministratore di crearne uno.")}</section>`;
-  else if (step === 2) v.innerHTML = `<section class="card"><div class="sel" style="margin-bottom:16px">${chips}</div><h2>Che prodotto hai lavorato?</h2>${cards(data.prodotti, ICON_BOX, i => `<b>${esc(i.a)}</b><span>${esc(i.b)}</span>`, "Nessun prodotto. Chiedi all'amministratore di crearne uno.")}</section>`;
+  else if (step === 2) { const nProd = k => data.prodotti.filter(p => !p.reparto || p.reparto === k).length; v.innerHTML = `<section class="card"><div class="sel" style="margin-bottom:16px">${chips}</div><h2>In quale reparto hai lavorato?</h2><div class="pick rep">${REPARTI.map(([k, n]) => `<button type="button" class="pc" data-rep-pick="${k}">${REP_ICON[k]}<span class="pn"><b>${n}</b><span>${nProd(k) === 1 ? "1 prodotto" : nProd(k) ? nProd(k) + " prodotti" : "Nessun prodotto"}</span></span></button>`).join("")}</div></section>`; }
+  else if (step === 3) v.innerHTML = `<section class="card"><div class="sel" style="margin-bottom:16px">${chips}</div><h2>Che prodotto hai lavorato?</h2>${cards(data.prodotti.filter(p => !p.reparto || p.reparto === o.rep), ICON_BOX, i => `<b>${esc(i.a)}</b><span>${esc(i.b)}</span>`, "Nessun prodotto in questo reparto. Chiedi all'amministratore di crearne uno.")}</section>`;
   else v.innerHTML = `<section class="card"><div class="sel">${chips}</div></section>
     <div class="grid2">
       <section class="card"><h2>Pezzi prodotti</h2>${stepper("minusP", "pzp", "plusP", "", "0")}<small class="mut hint">Solo pezzi buoni, scarti esclusi</small></section>
@@ -397,8 +567,9 @@ function renderOperatore(v) {
     </div>
     <button type="button" class="btn" id="regT" style="width:100%;padding:14px;font-size:16px">Registra turno</button>`;
   v.querySelectorAll("[data-pick]").forEach(b => b.onclick = () => { const it = (step === 1 ? data.operatori : data.prodotti).find(x => x.id === b.dataset.pick); if (!it) return; o[step === 1 ? "op" : "prod"] = it.a + " " + it.b; render(); });
-  v.querySelectorAll("[data-back]").forEach(b => b.onclick = () => { o[b.dataset.back] = ""; render(); });
-  if (step !== 3) return;
+  v.querySelectorAll("[data-rep-pick]").forEach(b => b.onclick = () => { o.rep = b.dataset.repPick; o.prod = ""; render(); });
+  v.querySelectorAll("[data-back]").forEach(b => b.onclick = () => { o[b.dataset.back] = ""; if (b.dataset.back === "rep") o.prod = ""; render(); });
+  if (step !== 4) return;
   [["minusP", "plusP", "#pzp"], ["minus", "plus", "#pz"]].forEach(([m, p, id]) => { $("#" + m).onclick = () => $(id).value = Math.max(0, (+$(id).value || 0) - 1); $("#" + p).onclick = () => $(id).value = (+$(id).value || 0) + 1; });
   [["#pzp", "Pezzi prodotti"], ["#pz", "Pezzi scartati"], ["#h", "Ore di fermo", 99], ["#m", "Minuti di fermo", 59], ["#s", "Secondi di fermo", 59]].forEach(([id, t, mx]) => { const el = $(id); el.onclick = () => openKeypad(el, t, mx); el.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openKeypad(el, t, mx); } }; });
   $("#regT").onclick = () => {
@@ -409,30 +580,32 @@ function renderOperatore(v) {
     if (!scr && cs) return alert("Hai scelto una causa di scarto: inserisci anche i pezzi scartati.");
     if (dur && !cf) return alert("Seleziona la causa di fermo.");
     if (!dur && cf) return alert("Hai scelto una causa di fermo: inserisci anche la durata.");
-    if (!dir && !confirm("La cartella non è collegata: il turno verrà salvato solo in questo browser.\nRegistrare comunque?")) return;
+    if (!CLOUD && !dir && window.showDirectoryPicker && !confirm("La cartella non è collegata: il turno verrà salvato solo in questo browser.\nRegistrare comunque?")) return;
     const ts = new Date().toISOString(), base = {operatore: o.op, prodotto: o.prod}, recs = [];
     if (prd) recs.push({tipo: "Produzione", causa: "", pezzi: prd});
     if (scr) recs.push({tipo: "Scarto", causa: cs, pezzi: scr});
     if (dur) recs.push({tipo: "Fermo", causa: cf, durataSec: dur});
     data.registrazioni.unshift(...recs.map(r => ({id: uid(), ts, ...base, ...r})));
     const msg = [prd && `${prd} prodotti`, scr && `${scr} scartati`, dur && `fermo ${fmt(dur)}`].filter(Boolean).join(", ");
-    opState = {op: "", prod: ""};
+    opState = {op: "", rep: "", prod: ""};
     save().then(() => showSuccess(msg));
   };
 }
 function render() {
   if (!role) return;
   $("#reports").classList.toggle("hidden", !(canViewReports(role) && page === "report"));
-  $("#nav").classList.toggle("hidden", role !== "admin");
+  $("#nav").classList.toggle("hidden", role !== "admin"); backupStatus(); $("#bkImp").classList.toggle("hidden", role !== "admin"); $("#bkBox").classList.toggle("hidden", CLOUD && role !== "admin");
   document.querySelectorAll("[data-page]").forEach(b => b.classList.toggle("on", b.dataset.page === page));
   const v = $("#view"); v.classList.toggle("hidden", role === "admin" && page !== "setup");
   if (role === "admin") {
     v.innerHTML = `<div class="grid2">${REG.map(([k,t,a,b]) => `
       <section class="card"><h2>${t}</h2>
-        <form class="row" data-add="${k}"><input class="field" name="a" placeholder="${a}" required><input class="field" name="b" placeholder="${b}" required><button class="btn">Aggiungi</button></form>
-        <ul>${data[k].map(i => `<li><span><b>${esc(i.a)}</b> ${esc(i.b)}</span><button class="link" data-del="${k}:${i.id}">Elimina</button></li>`).join("") || `<li class="mut">Nessun elemento</li>`}</ul>
+        <form class="row${k === "prodotti" ? " wrap" : ""}" data-add="${k}"><input class="field" name="a" placeholder="${a}" required><input class="field" name="b" placeholder="${b}" required>${k === "prodotti" ? `<select class="field" name="rep" required aria-label="Reparto"><option value="">Reparto…</option>${REPARTI.map(([v, n]) => `<option value="${v}">${n}</option>`).join("")}</select>` : ""}<button class="btn">Aggiungi</button></form>
+        <ul>${data[k].map(i => `<li><span><b>${esc(i.a)}</b> ${esc(i.b)}</span><span class="row">${k === "prodotti" ? `<select class="field mini" data-rep="${i.id}" aria-label="Reparto di ${esc(i.a)}">${i.reparto ? "" : `<option value="" selected disabled>Senza reparto</option>`}${REPARTI.map(([v, n]) => `<option value="${v}"${i.reparto === v ? " selected" : ""}>${n}</option>`).join("")}</select>` : ""}<button class="link" data-del="${k}:${i.id}">Elimina</button></span></li>`).join("") || `<li class="mut">Nessun elemento</li>`}</ul>
       </section>`).join("")}</div>`;
-    v.querySelectorAll("[data-add]").forEach(f => f.onsubmit = e => { e.preventDefault(); const a = f.a.value.trim(), b = f.b.value.trim(); if (!a || !b) return; data[f.dataset.add].push({id: uid(), a, b}); save(); });
+    v.querySelectorAll("[data-add]").forEach(f => f.onsubmit = e => { e.preventDefault(); const a = f.a.value.trim(), b = f.b.value.trim(), reparto = f.rep ? f.rep.value : ""; if (!a || !b) return; if (f.rep && !reparto) return alert("Scegli il reparto del prodotto."); data[f.dataset.add].push(reparto ? {id: uid(), a, b, reparto} : {id: uid(), a, b}); save(); });
+    /* Cambio reparto: il prodotto viene ricreato con un nuovo id (le registrazioni lo citano per nome, quindi lo storico resta valido) */
+    v.querySelectorAll("[data-rep]").forEach(sel => sel.onchange = () => { const old = data.prodotti.find(x => x.id === sel.dataset.rep); if (!old || !sel.value) return; data.prodotti = data.prodotti.map(x => x === old ? {id: uid(), a: old.a, b: old.b, reparto: sel.value} : x); save(); });
     v.querySelectorAll("[data-del]").forEach(bt => bt.onclick = () => { const [k, id] = bt.dataset.del.split(":"); data[k] = data[k].filter(x => x.id !== id); save(); });
   } else {
     renderOperatore(v);
@@ -458,9 +631,9 @@ function render() {
   const N = n => n.toLocaleString("it-IT"), pct = (a, b) => a + b ? (a / (a + b) * 100).toFixed(1).replace(".", ",") + "%" : "–";
   $("#tot").innerHTML = [["Pezzi prodotti", N(prd), `${N(f.list.length)} registrazioni`], ["Pezzi scartati", N(scr), "&nbsp;"], ["% scarto", pct(scr, prd), "scarti su prodotti + scarti"], ["Tempo di fermo", fmt(fer), `${sum("Fermo").length} fermi`]].map(([l, v, n]) => `<div class="kpi"><span>${l}</span><b>${v}</b><small>${n}</small></div>`).join("");
   if (reportMode === "summary") {
-    const g = $("#sumGroup").value, rows = new Map(), dh = {giorno: "Giorno", operatore: "Operatore", prodotto: "Prodotto"};
+    const g = $("#sumGroup").value, rows = new Map(), dh = {giorno: "Giorno", operatore: "Operatore", prodotto: "Prodotto", reparto: "Reparto"};
     for (const r of f.list) {
-      const d = new Date(r.ts), k = g === "operatore" ? r.operatore : g === "prodotto" ? r.prodotto : iso(d);
+      const d = new Date(r.ts), k = g === "operatore" ? r.operatore : g === "prodotto" ? r.prodotto : g === "reparto" ? (repName(repOf(r.prodotto)) || "Senza reparto") : iso(d);
       const o = rows.get(k) || {k, lab: g === "giorno" ? d.toLocaleDateString("it-IT", {weekday: "short", day: "2-digit", month: "2-digit", year: "numeric"}) : k, prd: 0, scr: 0, fer: 0, nf: 0};
       if (r.tipo === "Produzione") o.prd += r.pezzi || 0; else if (r.tipo === "Scarto") o.scr += r.pezzi || 0; else { o.fer += r.durataSec || 0; o.nf++; }
       rows.set(k, o);
@@ -477,7 +650,7 @@ function render() {
     $("#sumStops").innerHTML = cau("Fermo", r => r.durataSec || 0, fmt, data.fermi);
   }
   const MAXR = 300, pill = {Produzione: "ok", Scarto: "sc", Fermo: "fe"};
-  $("#rows").innerHTML = f.list.slice(0, MAXR).map(r => { const d = new Date(r.ts), [pc, pd] = split(r.prodotto, data.prodotti); return `<tr><td>${d.toLocaleDateString("it-IT")}<br><span class="mut">${d.toLocaleTimeString("it-IT", {hour: "2-digit", minute: "2-digit"})}</span></td><td><span class="pill ${pill[r.tipo]}">${r.tipo}</span></td><td>${esc(r.operatore)}</td><td><b>${esc(pc)}</b><br><span class="mut">${esc(pd)}</span></td><td>${esc(r.causa)}</td><td class="num">${r.tipo === "Fermo" ? fmt(r.durataSec) : N(r.pezzi || 0)}</td><td>${role === "admin" ? `<button class="link" data-rdel="${r.id}">Elimina</button>` : ""}</td></tr>`; }).join("") + (f.list.length > MAXR ? `<tr><td colspan="7" class="mut">Mostrate le ultime ${MAXR} registrazioni su ${N(f.list.length)}: restringi il periodo o esporta in Excel.</td></tr>` : "") || `<tr><td colspan="7" class="mut">Nessuna registrazione${f.attivo ? " con i filtri selezionati" : ""}</td></tr>`;
+  $("#rows").innerHTML = f.list.slice(0, MAXR).map(r => { const d = new Date(r.ts), [pc, pd] = split(r.prodotto, data.prodotti); return `<tr><td>${d.toLocaleDateString("it-IT")}<br><span class="mut">${d.toLocaleTimeString("it-IT", {hour: "2-digit", minute: "2-digit"})}</span></td><td><span class="pill ${pill[r.tipo]}">${r.tipo}</span></td><td>${esc(r.operatore)}</td><td><b>${esc(pc)}</b><br><span class="mut">${esc(pd)}${repName(repOf(r.prodotto)) ? " · " + repName(repOf(r.prodotto)) : ""}</span></td><td>${esc(r.causa)}</td><td class="num">${r.tipo === "Fermo" ? fmt(r.durataSec) : N(r.pezzi || 0)}</td><td>${role === "admin" ? `<button class="link" data-rdel="${r.id}">Elimina</button>` : ""}</td></tr>`; }).join("") + (f.list.length > MAXR ? `<tr><td colspan="7" class="mut">Mostrate le ultime ${MAXR} registrazioni su ${N(f.list.length)}: restringi il periodo o esporta in Excel.</td></tr>` : "") || `<tr><td colspan="7" class="mut">Nessuna registrazione${f.attivo ? " con i filtri selezionati" : ""}</td></tr>`;
   document.querySelectorAll("[data-rdel]").forEach(b => b.onclick = () => { if (confirm("Eliminare la registrazione?")) { data.registrazioni = data.registrazioni.filter(x => x.id !== b.dataset.rdel); save(); } });
   const prod = prodList();
   $("#exp").disabled = $("#expx").disabled = !prod.length;
@@ -488,6 +661,17 @@ function render() {
 
 /* ---------- Avvio ---------- */
 (async () => {
+  if (CLOUD) {
+    try { const c = localStorage.getItem(LS); if (c) data = {...data, ...JSON.parse(c)}; } catch {}
+    $("#u").placeholder = "Email"; loadSess();
+    setInterval(() => { if (sess && cloudPending()) pushCloud(); }, 30000);
+    addEventListener("online", () => sess && pushCloud());
+    document.addEventListener("visibilitychange", () => { if (sess && !document.hidden) syncNow(true); });
+    if (!sess || !["admin", "operatore"].includes(sess.role)) return;
+    let err = "";
+    try { if (Date.now() > sess.exp) await refresh(); await pullCloud(); } catch (e) { if (e.auth || e.http === 401) { sess = null; localStorage.removeItem(LSS); return; } err = e.message; }
+    cloudStatus(err); start(sess.role); pushCloud(); return;
+  }
   folderStatus("none");
   try { const s = localStorage.getItem(LS); if (s) data = {...data, ...JSON.parse(s)}; } catch {}
   const h = await kvGet("dir").catch(() => null);
